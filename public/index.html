@@ -1,0 +1,1756 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>進口貨況看板</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@600;700;900&family=Noto+Sans+TC:wght@400;500;700;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap">
+<style>
+
+:root{
+  --bg:#0a0f1a;
+  --bg-elevated:#0d1526;
+  --surface:#121d34;
+  --surface-2:#182544;
+  --surface-3:#1f2e52;
+  --border:#243055;
+  --border-strong:#324372;
+  --text:#e8edf7;
+  --text-dim:#8fa0c4;
+  --text-faint:#5b6a8f;
+  --accent:#2dd4ee;
+  --accent-strong:#7fe9fa;
+  --accent-soft:rgba(45,212,238,.12);
+  --success:#34d399;
+  --success-soft:rgba(52,211,153,.14);
+  --warning:#fbbf24;
+  --warning-soft:rgba(251,191,36,.14);
+  --danger:#f87171;
+  --danger-soft:rgba(248,113,113,.16);
+  --closed:#6b7aa1;
+  --radius:14px;
+  --radius-sm:8px;
+  --font-ui:'Noto Sans TC','PingFang TC','Microsoft JhengHei',sans-serif;
+  --font-display:'Noto Serif TC','Noto Sans TC','PingFang TC',serif;
+  --font-mono:'JetBrains Mono','Noto Sans TC',monospace;
+  --shadow-sm:0 1px 2px rgba(2,6,16,.4);
+  --shadow-md:0 8px 24px -8px rgba(2,6,16,.55);
+  --shadow-lg:0 18px 44px -14px rgba(2,6,16,.6);
+  --shadow-glow:0 0 0 1px rgba(45,212,238,.18), 0 8px 28px -10px rgba(45,212,238,.28);
+}
+*,*::before,*::after{box-sizing:border-box;}
+html,body{margin:0;padding:0;}
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{animation-duration:.001ms !important;animation-iteration-count:1 !important;transition-duration:.001ms !important;scroll-behavior:auto !important;}
+}
+body{
+  background:
+    radial-gradient(circle at 12% -10%, rgba(45,212,238,.11), transparent 42%),
+    radial-gradient(circle at 92% 4%, rgba(52,211,153,.07), transparent 40%),
+    radial-gradient(circle at 50% 120%, rgba(45,212,238,.05), transparent 55%),
+    var(--bg);
+  background-attachment:fixed;
+  color:var(--text);
+  font-family:var(--font-ui);
+  line-height:1.5;
+  min-height:100vh;
+  -webkit-font-smoothing:antialiased;
+  text-rendering:optimizeLegibility;
+}
+body::before{
+  content:"";
+  position:fixed;
+  inset:0;
+  background-image:radial-gradient(rgba(143,160,196,.10) 1px, transparent 1px);
+  background-size:26px 26px;
+  pointer-events:none;
+  z-index:0;
+  opacity:.5;
+  mask-image:radial-gradient(circle at 50% 0%, black, transparent 75%);
+}
+button,input,select{font-family:inherit;color:inherit;}
+input:focus-visible,select:focus-visible,button:focus-visible,[tabindex]:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:4px;}
+input:focus,select:focus{outline:2px solid var(--accent);outline-offset:1px;}
+a{color:var(--accent);}
+.tabular{font-variant-numeric:tabular-nums;font-feature-settings:"tnum";}
+h1,h2,h3{text-wrap:balance;margin:0;}
+
+/* ---------- top bar ---------- */
+.topbar{
+  position:sticky;top:0;z-index:20;
+  background:rgba(10,15,26,.86);
+  backdrop-filter:blur(10px);
+  border-bottom:1px solid var(--border);
+}
+.topbar::after{
+  content:"";position:absolute;left:0;right:0;bottom:-1px;height:1px;
+  background:linear-gradient(90deg, transparent, rgba(45,212,238,.65) 50%, transparent);
+  opacity:.6;pointer-events:none;
+}
+.topbar-inner{
+  max-width:1180px;margin:0 auto;padding:14px 20px;
+  display:flex;align-items:center;gap:18px;flex-wrap:wrap;position:relative;
+}
+.brand{display:flex;align-items:center;gap:11px;margin-right:auto;}
+.brand-mark{
+  width:34px;height:34px;flex:none;border-radius:9px;
+  background:linear-gradient(155deg, var(--surface-3), var(--surface));
+  border:1px solid var(--border-strong);
+  display:flex;align-items:center;justify-content:center;color:var(--accent);
+  box-shadow:inset 0 0 0 1px rgba(45,212,238,.08), 0 4px 14px -6px rgba(45,212,238,.35);
+}
+.brand-mark svg{width:19px;height:19px;}
+.brand-text{display:flex;flex-direction:column;gap:2px;min-width:0;}
+.eyebrow{
+  font-family:var(--font-mono);font-size:.68rem;letter-spacing:.16em;
+  text-transform:uppercase;color:var(--accent);font-weight:600;
+}
+.brand-title{font-family:var(--font-display);font-size:1.32rem;font-weight:700;letter-spacing:.01em;text-wrap:balance;color:var(--text);}
+.search-wrap{position:relative;}
+.search-wrap svg{position:absolute;left:10px;top:50%;transform:translateY(-50%);opacity:.55;pointer-events:none;}
+.search-input{
+  width:220px;padding:8px 10px 8px 32px;border-radius:999px;
+  border:1px solid var(--border-strong);background:var(--surface);
+  color:var(--text);font-size:.86rem;
+}
+.search-input::placeholder{color:var(--text-faint);}
+.status-pill{
+  display:inline-flex;align-items:center;gap:6px;
+  font-family:var(--font-mono);font-size:.72rem;letter-spacing:.03em;
+  padding:5px 10px;border-radius:999px;border:1px solid var(--border-strong);background:var(--surface);
+  color:var(--text-dim);white-space:nowrap;
+}
+.status-dot{width:7px;height:7px;border-radius:50%;background:var(--text-faint);}
+.status-pill.synced .status-dot{background:var(--success);box-shadow:0 0 6px var(--success);}
+.status-pill.saving .status-dot{background:var(--accent);box-shadow:0 0 6px var(--accent);animation:pulse 1s infinite;}
+.status-pill.readonly .status-dot{background:var(--warning);}
+.status-pill.error .status-dot{background:var(--danger);}
+.status-pill.unavailable .status-dot{background:var(--text-faint);}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:.3;}}
+
+/* ---------- layout ---------- */
+.container{max-width:1180px;margin:0 auto;padding:22px 20px 80px;position:relative;z-index:1;}
+.banner{
+  display:flex;align-items:center;gap:10px;padding:10px 14px;border-radius:var(--radius-sm);
+  font-size:.86rem;margin-bottom:16px;border:1px solid;
+}
+.banner.readonly{background:var(--warning-soft);border-color:rgba(251,191,36,.4);color:var(--warning);}
+.banner.error{background:var(--danger-soft);border-color:rgba(248,113,113,.4);color:var(--danger);}
+.banner.unavailable{background:var(--surface-2);border-color:var(--border-strong);color:var(--text-dim);}
+.banner button{margin-left:auto;background:none;border:1px solid currentColor;color:inherit;border-radius:6px;padding:3px 9px;font-size:.78rem;cursor:pointer;}
+
+.add-ship-form{
+  display:flex;gap:8px;margin-bottom:26px;flex-wrap:wrap;
+}
+.add-ship-form input{flex:1;min-width:220px;}
+
+.section-label{
+  display:flex;align-items:center;gap:10px;margin:26px 0 12px;
+  font-family:var(--font-mono);font-size:.76rem;letter-spacing:.1em;text-transform:uppercase;color:var(--text-dim);
+}
+.section-label .count{color:var(--text);background:var(--surface-2);border-radius:999px;padding:1px 9px;font-weight:600;}
+.section-label .line{flex:1;height:1px;background:var(--border);}
+.section-toggle{background:none;border:none;color:var(--text-dim);cursor:pointer;display:flex;align-items:center;gap:8px;padding:0;font:inherit;}
+.section-toggle:hover{color:var(--text);}
+
+.ship-list{display:flex;flex-direction:column;gap:14px;}
+.ship-card{
+  background:var(--surface);border:1px solid var(--border);border-left:3px solid var(--accent);
+  border-radius:var(--radius);overflow:hidden;
+  transition:border-color .15s;
+}
+.ship-card.is-closed{border-left-color:var(--closed);opacity:.82;}
+.ship-header{
+  display:flex;align-items:center;gap:12px;padding:14px 16px;cursor:pointer;flex-wrap:wrap;
+}
+.chevron{
+  width:18px;height:18px;flex:none;color:var(--text-dim);
+  transition:transform .15s;
+}
+.ship-card.expanded .chevron{transform:rotate(90deg);color:var(--accent);}
+.ship-name-input{
+  background:transparent;border:none;border-bottom:1px solid transparent;
+  font-family:var(--font-display);font-size:1.15rem;font-weight:700;color:var(--text);padding:2px 0;min-width:80px;max-width:280px;
+}
+.ship-name-input:hover{border-color:var(--border-strong);}
+.ship-name-input:focus{border-color:var(--accent);outline:none;}
+.ship-meta{display:flex;align-items:center;gap:14px;color:var(--text-dim);font-size:.82rem;flex-wrap:wrap;}
+.mini-progress{display:flex;align-items:center;gap:7px;}
+.mini-progress .track{width:64px;height:5px;border-radius:3px;background:var(--surface-3);overflow:hidden;}
+.mini-progress .fill{height:100%;background:var(--success);border-radius:3px;box-shadow:0 0 6px rgba(52,211,153,.6);}
+.pill{
+  font-family:var(--font-mono);font-size:.7rem;padding:3px 9px;border-radius:999px;
+  border:1px solid var(--border-strong);color:var(--text-dim);white-space:nowrap;
+}
+.pill.active{color:var(--accent);border-color:rgba(45,212,238,.4);background:var(--accent-soft);}
+.pill.closed{color:var(--closed);border-color:rgba(107,122,161,.5);}
+.ship-header-actions{display:flex;align-items:center;gap:10px;margin-left:auto;}
+.closed-toggle{display:flex;align-items:center;gap:6px;font-size:.78rem;color:var(--text-dim);cursor:pointer;white-space:nowrap;}
+.closed-toggle input{accent-color:var(--closed);width:15px;height:15px;cursor:pointer;}
+
+.ship-body{padding:0 16px 16px;border-top:1px solid var(--border);}
+.ship-body[hidden]{display:none;}
+
+.owner-block{background:var(--surface-2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px 14px;margin-top:14px;}
+.owner-header{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+.owner-name-input{
+  background:transparent;border:none;border-bottom:1px solid transparent;
+  font-family:var(--font-display);font-size:1.05rem;font-weight:700;color:var(--accent-strong);padding:2px 0;min-width:60px;max-width:220px;
+}
+.owner-name-input:hover{border-color:var(--border-strong);}
+.owner-name-input:focus{border-color:var(--accent);outline:none;}
+.owner-sub{color:var(--text-faint);font-size:.74rem;font-family:var(--font-mono);}
+.icon-btn{
+  width:26px;height:26px;flex:none;border-radius:7px;border:1px solid var(--border-strong);
+  background:var(--surface);color:var(--text-dim);cursor:pointer;display:inline-flex;align-items:center;justify-content:center;
+  transition:.12s;
+}
+.icon-btn:hover{color:var(--text);border-color:var(--text-faint);}
+.icon-btn.danger-arm{background:var(--danger-soft);color:var(--danger);border-color:rgba(248,113,113,.5);}
+.icon-btn.danger-arm:hover{background:var(--danger);color:#1a0d0d;}
+.icon-btn svg{width:14px;height:14px;}
+
+/* ---------- drill-down screen navigation ---------- */
+.screen-header{display:flex;align-items:center;gap:12px;margin-bottom:18px;flex-wrap:wrap;}
+.back-btn{
+  width:34px;height:34px;flex:none;border-radius:9px;border:1px solid var(--border-strong);
+  background:var(--surface);color:var(--text-dim);cursor:pointer;display:inline-flex;align-items:center;justify-content:center;
+  box-shadow:var(--shadow-sm);transition:.14s;
+}
+.back-btn:hover{color:var(--accent);border-color:var(--accent);box-shadow:var(--shadow-glow);}
+.back-btn svg{width:18px;height:18px;}
+.breadcrumb{display:flex;align-items:center;gap:6px;flex-wrap:wrap;font-size:.86rem;min-width:0;}
+.crumb{background:none;border:none;color:var(--text-dim);cursor:pointer;padding:2px 2px;font:inherit;}
+.crumb:hover{color:var(--accent);text-decoration:underline;}
+.crumb-sep{color:var(--text-faint);}
+.crumb-current{color:var(--text);font-weight:700;font-family:var(--font-display);font-size:.98rem;}
+.header-actions{display:flex;align-items:center;gap:10px;margin-left:auto;flex-wrap:wrap;}
+
+.nav-list{display:flex;flex-direction:column;gap:12px;}
+.nav-row{
+  display:flex;align-items:center;gap:12px;flex-wrap:wrap;
+  background:linear-gradient(165deg, var(--surface-2), var(--surface));
+  border:1px solid var(--border);border-left:3px solid var(--accent);
+  border-radius:var(--radius);padding:14px 16px;
+  box-shadow:var(--shadow-sm);transition:box-shadow .16s, border-color .16s, transform .16s;
+}
+.nav-row:hover{box-shadow:var(--shadow-md);border-color:var(--border-strong);}
+.nav-row.is-closed{border-left-color:var(--closed);opacity:.82;}
+.nav-name-btn{
+  display:flex;align-items:center;gap:8px;background:none;border:none;cursor:pointer;
+  font-family:var(--font-display);
+  color:var(--text);font-size:1.06rem;font-weight:700;padding:2px 0;text-align:left;min-width:0;
+}
+.nav-name-btn > span:first-child{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0;}
+.nav-name-btn:hover{color:var(--accent-strong);}
+.nav-name-btn .chevron-right{width:16px;height:16px;color:var(--text-dim);flex:none;transition:.12s;}
+.nav-name-btn:hover .chevron-right{color:var(--accent);transform:translateX(2px);}
+.owner-nav-btn{font-size:.96rem;color:var(--accent-strong);}
+.cargo-nav-btn{font-size:.96rem;color:var(--text);}
+.cf .nav-name-btn{width:100%;justify-content:space-between;}
+.nav-row-meta{display:flex;align-items:center;gap:12px;color:var(--text-dim);font-size:.82rem;flex-wrap:wrap;}
+.nav-row-actions{display:flex;align-items:center;gap:10px;margin-left:auto;flex-wrap:wrap;}
+
+.info-card{
+  background:linear-gradient(165deg, var(--surface-2), var(--surface));
+  border:1px solid var(--border);border-radius:var(--radius-sm);padding:14px 16px;margin-bottom:20px;
+  box-shadow:var(--shadow-sm);
+}
+.info-grid{display:grid;grid-template-columns:1.3fr 1.3fr 1.3fr .7fr auto;gap:14px;align-items:end;}
+.info-field{display:flex;flex-direction:column;gap:4px;min-width:0;}
+.info-field label{font-family:var(--font-mono);font-size:.64rem;letter-spacing:.06em;text-transform:uppercase;color:var(--text-faint);}
+.info-field.center{align-items:center;}
+
+@media (max-width:760px){
+  .info-grid{grid-template-columns:1fr 1fr;}
+  .nav-row{padding:14px;}
+  .nav-row-actions{flex-basis:100%;justify-content:space-between;padding-top:8px;border-top:1px dashed var(--border-strong);}
+  .nav-row-meta{flex-basis:100%;}
+  .screen-header{gap:10px;}
+}
+
+/* ---- cargo rows: CSS grid "table" that becomes stacked cards on narrow screens ---- */
+.cargo-grid{display:flex;flex-direction:column;gap:10px;margin-top:10px;}
+.cargo-grid-head{
+  display:grid;grid-template-columns:1.3fr 1.15fr 1.3fr .7fr .7fr .6fr auto;gap:10px;
+  padding:0 12px;font-family:var(--font-mono);font-size:.64rem;letter-spacing:.07em;text-transform:uppercase;color:var(--text-faint);
+}
+.cargo-row{
+  display:grid;grid-template-columns:1.3fr 1.15fr 1.3fr .7fr .7fr .6fr auto;gap:10px;align-items:center;
+  background:var(--surface-2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:10px 12px;
+  box-shadow:var(--shadow-sm);transition:box-shadow .16s, border-color .16s;
+}
+.cargo-row:hover{border-color:var(--border-strong);box-shadow:var(--shadow-md);}
+.cargo-row.is-open{border-color:var(--accent);}
+.cf{min-width:0;}
+.cf.num{text-align:right;}
+.cf.center{text-align:center;}
+.cf.actions{display:flex;justify-content:flex-end;align-items:center;gap:6px;white-space:nowrap;}
+.field-label{display:none;}
+.cargo-name-input{
+  background:transparent;border:none;border-bottom:1px solid transparent;
+  font-weight:600;color:var(--text);width:100%;min-width:0;padding:2px 0;
+}
+.cargo-name-input:hover{border-color:var(--border-strong);}
+.cargo-name-input:focus{border-color:var(--accent);outline:none;}
+.qty-cell{display:flex;align-items:center;gap:5px;}
+.qty-input{
+  width:64px;text-align:right;background:var(--surface);border:1px solid var(--border-strong);
+  border-radius:6px;padding:4px 6px;font-family:var(--font-mono);font-size:.82rem;
+}
+.unit-select{
+  background:var(--surface);border:1px solid var(--border-strong);border-radius:6px;
+  padding:4px 4px;font-family:var(--font-mono);font-size:.78rem;color:var(--text-dim);
+}
+.val{font-family:var(--font-mono);font-weight:600;}
+.val-neutral{color:var(--text-dim);}
+.val-warning{color:var(--warning);}
+.val-success{color:var(--success);}
+.val-danger{color:var(--danger);}
+.done-checkbox{width:20px;height:20px;accent-color:var(--success);cursor:pointer;}
+.detail-btn{
+  background:none;border:1px solid var(--border-strong);color:var(--text-dim);border-radius:999px;
+  padding:5px 11px;font-size:.74rem;cursor:pointer;font-family:var(--font-mono);white-space:nowrap;
+}
+.detail-btn:hover{color:var(--accent);border-color:var(--accent);}
+.detail-btn.open{color:var(--accent);border-color:var(--accent);background:var(--accent-soft);}
+
+/* ---- delivery log rows: same grid-card pattern, nested inside a cargo row ---- */
+.delivery-wrap{grid-column:1/-1;background:var(--bg-elevated);border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px;margin-top:2px;box-shadow:var(--shadow-sm);}
+.delivery-summary{
+  font-size:.92rem;color:var(--text-dim);margin-bottom:10px;padding-bottom:10px;border-bottom:1px dashed var(--border-strong);
+}
+.delivery-summary .val{font-size:1.05rem;margin:0 2px;}
+.delivery-summary-sub{color:var(--text-faint);font-size:.78rem;margin-left:8px;}
+.delivery-grid{display:flex;flex-direction:column;gap:8px;}
+.delivery-grid-head{
+  display:grid;grid-template-columns:1fr 1fr auto;gap:8px;padding:0 4px;
+  font-family:var(--font-mono);font-size:.62rem;letter-spacing:.06em;text-transform:uppercase;color:var(--text-faint);
+}
+.delivery-item{
+  display:grid;grid-template-columns:1fr 1fr auto;gap:8px;align-items:center;
+  background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:8px 10px;
+  box-shadow:var(--shadow-sm);
+}
+.delivery-item .df{min-width:0;}
+.delivery-item .df.num{text-align:right;}
+.delivery-item .df.actions{display:flex;justify-content:flex-end;}
+.delivery-item input{width:100%;box-sizing:border-box;min-width:0;}
+.cf input[type=text]{width:100%;box-sizing:border-box;}
+.no-deliveries{color:var(--text-faint);font-size:.82rem;padding:6px 4px;}
+
+.add-row{
+  display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap;margin-top:12px;padding-top:12px;
+  border-top:1px dashed var(--border-strong);
+}
+.add-row .field{display:flex;flex-direction:column;gap:4px;}
+.add-row .field-label{
+  display:block;font-family:var(--font-mono);font-size:.64rem;letter-spacing:.06em;text-transform:uppercase;color:var(--text-faint);
+}
+.add-row .field.grow{flex:1;min-width:140px;}
+.add-row input[type=text]{width:100%;}
+.add-row > .btn{margin-left:auto;}
+input[type=text],input[type=number],input[type=date]{
+  background:var(--surface);border:1px solid var(--border-strong);border-radius:8px;
+  padding:8px 10px;color:var(--text);font-size:.86rem;
+}
+
+@media (max-width:760px){
+  .cargo-grid-head{display:none;}
+  .cargo-row{grid-template-columns:1fr 1fr;row-gap:14px;}
+  .cf.actions{grid-column:1/-1;justify-content:space-between;border-top:1px dashed var(--border-strong);padding-top:10px;}
+  .cf.num,.cf.center{text-align:left;}
+  .field-label{display:block;font-family:var(--font-mono);font-size:.62rem;letter-spacing:.06em;text-transform:uppercase;color:var(--text-faint);margin-bottom:4px;}
+  .icon-btn{width:34px;height:34px;}
+  .icon-btn svg{width:16px;height:16px;}
+  .done-checkbox{width:24px;height:24px;}
+
+  .delivery-grid-head{display:none;}
+  .delivery-item{grid-template-columns:1fr;row-gap:10px;}
+  .delivery-item .df.actions{justify-content:flex-end;}
+  .delivery-item .df.actions .btn{width:100%;}
+  .delivery-item .df.num{text-align:left;}
+
+  .add-row{flex-direction:column;align-items:stretch;}
+  .add-row .field{width:100%;}
+  .add-row .field.grow{min-width:0;}
+  .add-row > .btn{margin-left:0;width:100%;}
+
+  .add-ship-form{flex-direction:column;align-items:stretch;}
+  .add-ship-form input{min-width:0;}
+  .add-ship-form button{width:100%;}
+
+  .ship-header{padding:14px;}
+  .ship-header-actions{flex-basis:100%;justify-content:space-between;margin-left:0;padding-top:8px;border-top:1px dashed var(--border-strong);}
+  .ship-meta{flex-basis:100%;}
+  .owner-header{flex-wrap:wrap;}
+}
+.btn{
+  border-radius:8px;border:1px solid var(--border-strong);background:var(--surface-2);color:var(--text);
+  padding:8px 14px;font-size:.84rem;font-weight:600;cursor:pointer;white-space:nowrap;
+  transition:border-color .14s, color .14s, box-shadow .14s, transform .1s;
+}
+.btn:hover{border-color:var(--accent);color:var(--accent-strong);}
+.btn:active{transform:translateY(1px);}
+.btn-primary{
+  background:linear-gradient(160deg, var(--accent-strong), var(--accent));
+  border-color:var(--accent);color:#04222a;box-shadow:0 4px 16px -6px rgba(45,212,238,.5);
+}
+.btn-primary:hover{filter:brightness(1.06);box-shadow:0 6px 20px -6px rgba(45,212,238,.65);}
+.btn-sm{padding:5px 11px;font-size:.78rem;border-radius:7px;}
+.btn[disabled]{opacity:.5;cursor:not-allowed;}
+
+.empty-state{
+  text-align:center;padding:60px 20px;color:var(--text-faint);border:1px dashed var(--border-strong);
+  border-radius:var(--radius);background:radial-gradient(circle at 50% 0%, rgba(45,212,238,.05), transparent 65%);
+}
+.empty-state .big{margin-bottom:14px;color:var(--text-faint);display:flex;justify-content:center;}
+.empty-state .big svg{width:52px;height:52px;}
+.empty-state p{margin:6px 0 0;font-size:.9rem;}
+.empty-state p:first-of-type{color:var(--text-dim);font-size:.98rem;}
+.icon-spin{animation:spin 1.1s linear infinite;transform-origin:50% 50%;}
+@keyframes spin{to{transform:rotate(360deg);}}
+
+.toast{
+  position:fixed;left:50%;bottom:22px;transform:translateX(-50%);z-index:60;
+  background:var(--surface-3);border:1px solid var(--border-strong);color:var(--text);
+  padding:10px 18px;border-radius:999px;font-size:.82rem;max-width:min(92vw,480px);text-align:center;
+  box-shadow:var(--shadow-lg);
+}
+.closed-section[hidden]{display:none;}
+footer.hint{margin-top:36px;text-align:center;color:var(--text-faint);font-size:.74rem;font-family:var(--font-mono);}
+
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+(function(){
+  "use strict";
+  var APP_CSS = `
+:root{
+  --bg:#0a0f1a;
+  --bg-elevated:#0d1526;
+  --surface:#121d34;
+  --surface-2:#182544;
+  --surface-3:#1f2e52;
+  --border:#243055;
+  --border-strong:#324372;
+  --text:#e8edf7;
+  --text-dim:#8fa0c4;
+  --text-faint:#5b6a8f;
+  --accent:#2dd4ee;
+  --accent-strong:#7fe9fa;
+  --accent-soft:rgba(45,212,238,.12);
+  --success:#34d399;
+  --success-soft:rgba(52,211,153,.14);
+  --warning:#fbbf24;
+  --warning-soft:rgba(251,191,36,.14);
+  --danger:#f87171;
+  --danger-soft:rgba(248,113,113,.16);
+  --closed:#6b7aa1;
+  --radius:14px;
+  --radius-sm:8px;
+  --font-ui:'Noto Sans TC','PingFang TC','Microsoft JhengHei',sans-serif;
+  --font-display:'Noto Serif TC','Noto Sans TC','PingFang TC',serif;
+  --font-mono:'JetBrains Mono','Noto Sans TC',monospace;
+  --shadow-sm:0 1px 2px rgba(2,6,16,.4);
+  --shadow-md:0 8px 24px -8px rgba(2,6,16,.55);
+  --shadow-lg:0 18px 44px -14px rgba(2,6,16,.6);
+  --shadow-glow:0 0 0 1px rgba(45,212,238,.18), 0 8px 28px -10px rgba(45,212,238,.28);
+}
+*,*::before,*::after{box-sizing:border-box;}
+html,body{margin:0;padding:0;}
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{animation-duration:.001ms !important;animation-iteration-count:1 !important;transition-duration:.001ms !important;scroll-behavior:auto !important;}
+}
+body{
+  background:
+    radial-gradient(circle at 12% -10%, rgba(45,212,238,.11), transparent 42%),
+    radial-gradient(circle at 92% 4%, rgba(52,211,153,.07), transparent 40%),
+    radial-gradient(circle at 50% 120%, rgba(45,212,238,.05), transparent 55%),
+    var(--bg);
+  background-attachment:fixed;
+  color:var(--text);
+  font-family:var(--font-ui);
+  line-height:1.5;
+  min-height:100vh;
+  -webkit-font-smoothing:antialiased;
+  text-rendering:optimizeLegibility;
+}
+body::before{
+  content:"";
+  position:fixed;
+  inset:0;
+  background-image:radial-gradient(rgba(143,160,196,.10) 1px, transparent 1px);
+  background-size:26px 26px;
+  pointer-events:none;
+  z-index:0;
+  opacity:.5;
+  mask-image:radial-gradient(circle at 50% 0%, black, transparent 75%);
+}
+button,input,select{font-family:inherit;color:inherit;}
+input:focus-visible,select:focus-visible,button:focus-visible,[tabindex]:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:4px;}
+input:focus,select:focus{outline:2px solid var(--accent);outline-offset:1px;}
+a{color:var(--accent);}
+.tabular{font-variant-numeric:tabular-nums;font-feature-settings:"tnum";}
+h1,h2,h3{text-wrap:balance;margin:0;}
+
+/* ---------- top bar ---------- */
+.topbar{
+  position:sticky;top:0;z-index:20;
+  background:rgba(10,15,26,.86);
+  backdrop-filter:blur(10px);
+  border-bottom:1px solid var(--border);
+}
+.topbar::after{
+  content:"";position:absolute;left:0;right:0;bottom:-1px;height:1px;
+  background:linear-gradient(90deg, transparent, rgba(45,212,238,.65) 50%, transparent);
+  opacity:.6;pointer-events:none;
+}
+.topbar-inner{
+  max-width:1180px;margin:0 auto;padding:14px 20px;
+  display:flex;align-items:center;gap:18px;flex-wrap:wrap;position:relative;
+}
+.brand{display:flex;align-items:center;gap:11px;margin-right:auto;}
+.brand-mark{
+  width:34px;height:34px;flex:none;border-radius:9px;
+  background:linear-gradient(155deg, var(--surface-3), var(--surface));
+  border:1px solid var(--border-strong);
+  display:flex;align-items:center;justify-content:center;color:var(--accent);
+  box-shadow:inset 0 0 0 1px rgba(45,212,238,.08), 0 4px 14px -6px rgba(45,212,238,.35);
+}
+.brand-mark svg{width:19px;height:19px;}
+.brand-text{display:flex;flex-direction:column;gap:2px;min-width:0;}
+.eyebrow{
+  font-family:var(--font-mono);font-size:.68rem;letter-spacing:.16em;
+  text-transform:uppercase;color:var(--accent);font-weight:600;
+}
+.brand-title{font-family:var(--font-display);font-size:1.32rem;font-weight:700;letter-spacing:.01em;text-wrap:balance;color:var(--text);}
+.search-wrap{position:relative;}
+.search-wrap svg{position:absolute;left:10px;top:50%;transform:translateY(-50%);opacity:.55;pointer-events:none;}
+.search-input{
+  width:220px;padding:8px 10px 8px 32px;border-radius:999px;
+  border:1px solid var(--border-strong);background:var(--surface);
+  color:var(--text);font-size:.86rem;
+}
+.search-input::placeholder{color:var(--text-faint);}
+.status-pill{
+  display:inline-flex;align-items:center;gap:6px;
+  font-family:var(--font-mono);font-size:.72rem;letter-spacing:.03em;
+  padding:5px 10px;border-radius:999px;border:1px solid var(--border-strong);background:var(--surface);
+  color:var(--text-dim);white-space:nowrap;
+}
+.status-dot{width:7px;height:7px;border-radius:50%;background:var(--text-faint);}
+.status-pill.synced .status-dot{background:var(--success);box-shadow:0 0 6px var(--success);}
+.status-pill.saving .status-dot{background:var(--accent);box-shadow:0 0 6px var(--accent);animation:pulse 1s infinite;}
+.status-pill.readonly .status-dot{background:var(--warning);}
+.status-pill.error .status-dot{background:var(--danger);}
+.status-pill.unavailable .status-dot{background:var(--text-faint);}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:.3;}}
+
+/* ---------- layout ---------- */
+.container{max-width:1180px;margin:0 auto;padding:22px 20px 80px;position:relative;z-index:1;}
+.banner{
+  display:flex;align-items:center;gap:10px;padding:10px 14px;border-radius:var(--radius-sm);
+  font-size:.86rem;margin-bottom:16px;border:1px solid;
+}
+.banner.readonly{background:var(--warning-soft);border-color:rgba(251,191,36,.4);color:var(--warning);}
+.banner.error{background:var(--danger-soft);border-color:rgba(248,113,113,.4);color:var(--danger);}
+.banner.unavailable{background:var(--surface-2);border-color:var(--border-strong);color:var(--text-dim);}
+.banner button{margin-left:auto;background:none;border:1px solid currentColor;color:inherit;border-radius:6px;padding:3px 9px;font-size:.78rem;cursor:pointer;}
+
+.add-ship-form{
+  display:flex;gap:8px;margin-bottom:26px;flex-wrap:wrap;
+}
+.add-ship-form input{flex:1;min-width:220px;}
+
+.section-label{
+  display:flex;align-items:center;gap:10px;margin:26px 0 12px;
+  font-family:var(--font-mono);font-size:.76rem;letter-spacing:.1em;text-transform:uppercase;color:var(--text-dim);
+}
+.section-label .count{color:var(--text);background:var(--surface-2);border-radius:999px;padding:1px 9px;font-weight:600;}
+.section-label .line{flex:1;height:1px;background:var(--border);}
+.section-toggle{background:none;border:none;color:var(--text-dim);cursor:pointer;display:flex;align-items:center;gap:8px;padding:0;font:inherit;}
+.section-toggle:hover{color:var(--text);}
+
+.ship-list{display:flex;flex-direction:column;gap:14px;}
+.ship-card{
+  background:var(--surface);border:1px solid var(--border);border-left:3px solid var(--accent);
+  border-radius:var(--radius);overflow:hidden;
+  transition:border-color .15s;
+}
+.ship-card.is-closed{border-left-color:var(--closed);opacity:.82;}
+.ship-header{
+  display:flex;align-items:center;gap:12px;padding:14px 16px;cursor:pointer;flex-wrap:wrap;
+}
+.chevron{
+  width:18px;height:18px;flex:none;color:var(--text-dim);
+  transition:transform .15s;
+}
+.ship-card.expanded .chevron{transform:rotate(90deg);color:var(--accent);}
+.ship-name-input{
+  background:transparent;border:none;border-bottom:1px solid transparent;
+  font-family:var(--font-display);font-size:1.15rem;font-weight:700;color:var(--text);padding:2px 0;min-width:80px;max-width:280px;
+}
+.ship-name-input:hover{border-color:var(--border-strong);}
+.ship-name-input:focus{border-color:var(--accent);outline:none;}
+.ship-meta{display:flex;align-items:center;gap:14px;color:var(--text-dim);font-size:.82rem;flex-wrap:wrap;}
+.mini-progress{display:flex;align-items:center;gap:7px;}
+.mini-progress .track{width:64px;height:5px;border-radius:3px;background:var(--surface-3);overflow:hidden;}
+.mini-progress .fill{height:100%;background:var(--success);border-radius:3px;box-shadow:0 0 6px rgba(52,211,153,.6);}
+.pill{
+  font-family:var(--font-mono);font-size:.7rem;padding:3px 9px;border-radius:999px;
+  border:1px solid var(--border-strong);color:var(--text-dim);white-space:nowrap;
+}
+.pill.active{color:var(--accent);border-color:rgba(45,212,238,.4);background:var(--accent-soft);}
+.pill.closed{color:var(--closed);border-color:rgba(107,122,161,.5);}
+.ship-header-actions{display:flex;align-items:center;gap:10px;margin-left:auto;}
+.closed-toggle{display:flex;align-items:center;gap:6px;font-size:.78rem;color:var(--text-dim);cursor:pointer;white-space:nowrap;}
+.closed-toggle input{accent-color:var(--closed);width:15px;height:15px;cursor:pointer;}
+
+.ship-body{padding:0 16px 16px;border-top:1px solid var(--border);}
+.ship-body[hidden]{display:none;}
+
+.owner-block{background:var(--surface-2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px 14px;margin-top:14px;}
+.owner-header{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+.owner-name-input{
+  background:transparent;border:none;border-bottom:1px solid transparent;
+  font-family:var(--font-display);font-size:1.05rem;font-weight:700;color:var(--accent-strong);padding:2px 0;min-width:60px;max-width:220px;
+}
+.owner-name-input:hover{border-color:var(--border-strong);}
+.owner-name-input:focus{border-color:var(--accent);outline:none;}
+.owner-sub{color:var(--text-faint);font-size:.74rem;font-family:var(--font-mono);}
+.icon-btn{
+  width:26px;height:26px;flex:none;border-radius:7px;border:1px solid var(--border-strong);
+  background:var(--surface);color:var(--text-dim);cursor:pointer;display:inline-flex;align-items:center;justify-content:center;
+  transition:.12s;
+}
+.icon-btn:hover{color:var(--text);border-color:var(--text-faint);}
+.icon-btn.danger-arm{background:var(--danger-soft);color:var(--danger);border-color:rgba(248,113,113,.5);}
+.icon-btn.danger-arm:hover{background:var(--danger);color:#1a0d0d;}
+.icon-btn svg{width:14px;height:14px;}
+
+/* ---------- drill-down screen navigation ---------- */
+.screen-header{display:flex;align-items:center;gap:12px;margin-bottom:18px;flex-wrap:wrap;}
+.back-btn{
+  width:34px;height:34px;flex:none;border-radius:9px;border:1px solid var(--border-strong);
+  background:var(--surface);color:var(--text-dim);cursor:pointer;display:inline-flex;align-items:center;justify-content:center;
+  box-shadow:var(--shadow-sm);transition:.14s;
+}
+.back-btn:hover{color:var(--accent);border-color:var(--accent);box-shadow:var(--shadow-glow);}
+.back-btn svg{width:18px;height:18px;}
+.breadcrumb{display:flex;align-items:center;gap:6px;flex-wrap:wrap;font-size:.86rem;min-width:0;}
+.crumb{background:none;border:none;color:var(--text-dim);cursor:pointer;padding:2px 2px;font:inherit;}
+.crumb:hover{color:var(--accent);text-decoration:underline;}
+.crumb-sep{color:var(--text-faint);}
+.crumb-current{color:var(--text);font-weight:700;font-family:var(--font-display);font-size:.98rem;}
+.header-actions{display:flex;align-items:center;gap:10px;margin-left:auto;flex-wrap:wrap;}
+
+.nav-list{display:flex;flex-direction:column;gap:12px;}
+.nav-row{
+  display:flex;align-items:center;gap:12px;flex-wrap:wrap;
+  background:linear-gradient(165deg, var(--surface-2), var(--surface));
+  border:1px solid var(--border);border-left:3px solid var(--accent);
+  border-radius:var(--radius);padding:14px 16px;
+  box-shadow:var(--shadow-sm);transition:box-shadow .16s, border-color .16s, transform .16s;
+}
+.nav-row:hover{box-shadow:var(--shadow-md);border-color:var(--border-strong);}
+.nav-row.is-closed{border-left-color:var(--closed);opacity:.82;}
+.nav-name-btn{
+  display:flex;align-items:center;gap:8px;background:none;border:none;cursor:pointer;
+  font-family:var(--font-display);
+  color:var(--text);font-size:1.06rem;font-weight:700;padding:2px 0;text-align:left;min-width:0;
+}
+.nav-name-btn > span:first-child{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0;}
+.nav-name-btn:hover{color:var(--accent-strong);}
+.nav-name-btn .chevron-right{width:16px;height:16px;color:var(--text-dim);flex:none;transition:.12s;}
+.nav-name-btn:hover .chevron-right{color:var(--accent);transform:translateX(2px);}
+.owner-nav-btn{font-size:.96rem;color:var(--accent-strong);}
+.cargo-nav-btn{font-size:.96rem;color:var(--text);}
+.cf .nav-name-btn{width:100%;justify-content:space-between;}
+.nav-row-meta{display:flex;align-items:center;gap:12px;color:var(--text-dim);font-size:.82rem;flex-wrap:wrap;}
+.nav-row-actions{display:flex;align-items:center;gap:10px;margin-left:auto;flex-wrap:wrap;}
+
+.info-card{
+  background:linear-gradient(165deg, var(--surface-2), var(--surface));
+  border:1px solid var(--border);border-radius:var(--radius-sm);padding:14px 16px;margin-bottom:20px;
+  box-shadow:var(--shadow-sm);
+}
+.info-grid{display:grid;grid-template-columns:1.3fr 1.3fr 1.3fr .7fr auto;gap:14px;align-items:end;}
+.info-field{display:flex;flex-direction:column;gap:4px;min-width:0;}
+.info-field label{font-family:var(--font-mono);font-size:.64rem;letter-spacing:.06em;text-transform:uppercase;color:var(--text-faint);}
+.info-field.center{align-items:center;}
+
+@media (max-width:760px){
+  .info-grid{grid-template-columns:1fr 1fr;}
+  .nav-row{padding:14px;}
+  .nav-row-actions{flex-basis:100%;justify-content:space-between;padding-top:8px;border-top:1px dashed var(--border-strong);}
+  .nav-row-meta{flex-basis:100%;}
+  .screen-header{gap:10px;}
+}
+
+/* ---- cargo rows: CSS grid "table" that becomes stacked cards on narrow screens ---- */
+.cargo-grid{display:flex;flex-direction:column;gap:10px;margin-top:10px;}
+.cargo-grid-head{
+  display:grid;grid-template-columns:1.3fr 1.15fr 1.3fr .7fr .7fr .6fr auto;gap:10px;
+  padding:0 12px;font-family:var(--font-mono);font-size:.64rem;letter-spacing:.07em;text-transform:uppercase;color:var(--text-faint);
+}
+.cargo-row{
+  display:grid;grid-template-columns:1.3fr 1.15fr 1.3fr .7fr .7fr .6fr auto;gap:10px;align-items:center;
+  background:var(--surface-2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:10px 12px;
+  box-shadow:var(--shadow-sm);transition:box-shadow .16s, border-color .16s;
+}
+.cargo-row:hover{border-color:var(--border-strong);box-shadow:var(--shadow-md);}
+.cargo-row.is-open{border-color:var(--accent);}
+.cf{min-width:0;}
+.cf.num{text-align:right;}
+.cf.center{text-align:center;}
+.cf.actions{display:flex;justify-content:flex-end;align-items:center;gap:6px;white-space:nowrap;}
+.field-label{display:none;}
+.cargo-name-input{
+  background:transparent;border:none;border-bottom:1px solid transparent;
+  font-weight:600;color:var(--text);width:100%;min-width:0;padding:2px 0;
+}
+.cargo-name-input:hover{border-color:var(--border-strong);}
+.cargo-name-input:focus{border-color:var(--accent);outline:none;}
+.qty-cell{display:flex;align-items:center;gap:5px;}
+.qty-input{
+  width:64px;text-align:right;background:var(--surface);border:1px solid var(--border-strong);
+  border-radius:6px;padding:4px 6px;font-family:var(--font-mono);font-size:.82rem;
+}
+.unit-select{
+  background:var(--surface);border:1px solid var(--border-strong);border-radius:6px;
+  padding:4px 4px;font-family:var(--font-mono);font-size:.78rem;color:var(--text-dim);
+}
+.val{font-family:var(--font-mono);font-weight:600;}
+.val-neutral{color:var(--text-dim);}
+.val-warning{color:var(--warning);}
+.val-success{color:var(--success);}
+.val-danger{color:var(--danger);}
+.done-checkbox{width:20px;height:20px;accent-color:var(--success);cursor:pointer;}
+.detail-btn{
+  background:none;border:1px solid var(--border-strong);color:var(--text-dim);border-radius:999px;
+  padding:5px 11px;font-size:.74rem;cursor:pointer;font-family:var(--font-mono);white-space:nowrap;
+}
+.detail-btn:hover{color:var(--accent);border-color:var(--accent);}
+.detail-btn.open{color:var(--accent);border-color:var(--accent);background:var(--accent-soft);}
+
+/* ---- delivery log rows: same grid-card pattern, nested inside a cargo row ---- */
+.delivery-wrap{grid-column:1/-1;background:var(--bg-elevated);border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px;margin-top:2px;box-shadow:var(--shadow-sm);}
+.delivery-summary{
+  font-size:.92rem;color:var(--text-dim);margin-bottom:10px;padding-bottom:10px;border-bottom:1px dashed var(--border-strong);
+}
+.delivery-summary .val{font-size:1.05rem;margin:0 2px;}
+.delivery-summary-sub{color:var(--text-faint);font-size:.78rem;margin-left:8px;}
+.delivery-grid{display:flex;flex-direction:column;gap:8px;}
+.delivery-grid-head{
+  display:grid;grid-template-columns:1fr 1fr auto;gap:8px;padding:0 4px;
+  font-family:var(--font-mono);font-size:.62rem;letter-spacing:.06em;text-transform:uppercase;color:var(--text-faint);
+}
+.delivery-item{
+  display:grid;grid-template-columns:1fr 1fr auto;gap:8px;align-items:center;
+  background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:8px 10px;
+  box-shadow:var(--shadow-sm);
+}
+.delivery-item .df{min-width:0;}
+.delivery-item .df.num{text-align:right;}
+.delivery-item .df.actions{display:flex;justify-content:flex-end;}
+.delivery-item input{width:100%;box-sizing:border-box;min-width:0;}
+.cf input[type=text]{width:100%;box-sizing:border-box;}
+.no-deliveries{color:var(--text-faint);font-size:.82rem;padding:6px 4px;}
+
+.add-row{
+  display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap;margin-top:12px;padding-top:12px;
+  border-top:1px dashed var(--border-strong);
+}
+.add-row .field{display:flex;flex-direction:column;gap:4px;}
+.add-row .field-label{
+  display:block;font-family:var(--font-mono);font-size:.64rem;letter-spacing:.06em;text-transform:uppercase;color:var(--text-faint);
+}
+.add-row .field.grow{flex:1;min-width:140px;}
+.add-row input[type=text]{width:100%;}
+.add-row > .btn{margin-left:auto;}
+input[type=text],input[type=number],input[type=date]{
+  background:var(--surface);border:1px solid var(--border-strong);border-radius:8px;
+  padding:8px 10px;color:var(--text);font-size:.86rem;
+}
+
+@media (max-width:760px){
+  .cargo-grid-head{display:none;}
+  .cargo-row{grid-template-columns:1fr 1fr;row-gap:14px;}
+  .cf.actions{grid-column:1/-1;justify-content:space-between;border-top:1px dashed var(--border-strong);padding-top:10px;}
+  .cf.num,.cf.center{text-align:left;}
+  .field-label{display:block;font-family:var(--font-mono);font-size:.62rem;letter-spacing:.06em;text-transform:uppercase;color:var(--text-faint);margin-bottom:4px;}
+  .icon-btn{width:34px;height:34px;}
+  .icon-btn svg{width:16px;height:16px;}
+  .done-checkbox{width:24px;height:24px;}
+
+  .delivery-grid-head{display:none;}
+  .delivery-item{grid-template-columns:1fr;row-gap:10px;}
+  .delivery-item .df.actions{justify-content:flex-end;}
+  .delivery-item .df.actions .btn{width:100%;}
+  .delivery-item .df.num{text-align:left;}
+
+  .add-row{flex-direction:column;align-items:stretch;}
+  .add-row .field{width:100%;}
+  .add-row .field.grow{min-width:0;}
+  .add-row > .btn{margin-left:0;width:100%;}
+
+  .add-ship-form{flex-direction:column;align-items:stretch;}
+  .add-ship-form input{min-width:0;}
+  .add-ship-form button{width:100%;}
+
+  .ship-header{padding:14px;}
+  .ship-header-actions{flex-basis:100%;justify-content:space-between;margin-left:0;padding-top:8px;border-top:1px dashed var(--border-strong);}
+  .ship-meta{flex-basis:100%;}
+  .owner-header{flex-wrap:wrap;}
+}
+.btn{
+  border-radius:8px;border:1px solid var(--border-strong);background:var(--surface-2);color:var(--text);
+  padding:8px 14px;font-size:.84rem;font-weight:600;cursor:pointer;white-space:nowrap;
+  transition:border-color .14s, color .14s, box-shadow .14s, transform .1s;
+}
+.btn:hover{border-color:var(--accent);color:var(--accent-strong);}
+.btn:active{transform:translateY(1px);}
+.btn-primary{
+  background:linear-gradient(160deg, var(--accent-strong), var(--accent));
+  border-color:var(--accent);color:#04222a;box-shadow:0 4px 16px -6px rgba(45,212,238,.5);
+}
+.btn-primary:hover{filter:brightness(1.06);box-shadow:0 6px 20px -6px rgba(45,212,238,.65);}
+.btn-sm{padding:5px 11px;font-size:.78rem;border-radius:7px;}
+.btn[disabled]{opacity:.5;cursor:not-allowed;}
+
+.empty-state{
+  text-align:center;padding:60px 20px;color:var(--text-faint);border:1px dashed var(--border-strong);
+  border-radius:var(--radius);background:radial-gradient(circle at 50% 0%, rgba(45,212,238,.05), transparent 65%);
+}
+.empty-state .big{margin-bottom:14px;color:var(--text-faint);display:flex;justify-content:center;}
+.empty-state .big svg{width:52px;height:52px;}
+.empty-state p{margin:6px 0 0;font-size:.9rem;}
+.empty-state p:first-of-type{color:var(--text-dim);font-size:.98rem;}
+.icon-spin{animation:spin 1.1s linear infinite;transform-origin:50% 50%;}
+@keyframes spin{to{transform:rotate(360deg);}}
+
+.toast{
+  position:fixed;left:50%;bottom:22px;transform:translateX(-50%);z-index:60;
+  background:var(--surface-3);border:1px solid var(--border-strong);color:var(--text);
+  padding:10px 18px;border-radius:999px;font-size:.82rem;max-width:min(92vw,480px);text-align:center;
+  box-shadow:var(--shadow-lg);
+}
+.closed-section[hidden]{display:none;}
+footer.hint{margin-top:36px;text-align:center;color:var(--text-faint);font-size:.74rem;font-family:var(--font-mono);}
+`;
+  (function injectStyle(){
+    var s = document.createElement("style");
+    s.textContent = APP_CSS;
+    document.head.appendChild(s);
+  })();
+
+  /* ---------------- state ---------------- */
+  var state = loadInitialState();
+  var ui = loadUiState();
+  var initialLoadDone = false;
+
+  function loadInitialState(){
+    var el = document.getElementById("app-data");
+    if (el) {
+      try {
+        var parsed = JSON.parse(el.textContent);
+        if (parsed && Array.isArray(parsed.ships)) {
+          parsed.cargoPresets = parsed.cargoPresets || [];
+          parsed.locationPresets = parsed.locationPresets || [];
+          return parsed;
+        }
+      } catch (e) {}
+    }
+    return { ships: [], cargoPresets: [], locationPresets: [] };
+  }
+
+  function loadUiState(){
+    var def = {
+      search: "",
+      nav: { screen: "ships", shipId: null, ownerId: null, cargoId: null },
+      showClosedSection: false,
+      confirmArm: {},
+      saveStatus: "connecting",
+      lastErrorMsg: "",
+      flashMsg: ""
+    };
+    try {
+      var raw = sessionStorage.getItem("cargoTrackerUi");
+      if (raw) {
+        var parsed = JSON.parse(raw);
+        var merged = Object.assign({}, def, parsed, { saveStatus: "connecting", lastErrorMsg: "" });
+        if (!merged.nav || !merged.nav.screen) merged.nav = { screen: "ships", shipId: null, ownerId: null, cargoId: null };
+        return merged;
+      }
+    } catch (e) {}
+    return def;
+  }
+
+  function saveUiState(){
+    try {
+      sessionStorage.setItem("cargoTrackerUi", JSON.stringify({
+        nav: ui.nav,
+        showClosedSection: ui.showClosedSection
+      }));
+    } catch (e) {}
+  }
+
+  /* ---------------- helpers ---------------- */
+  var CARGO_UNITS = ["噸", "公斤", "台", "顆"];
+  function uid(prefix){
+    return (prefix || "id") + "_" + Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+  }
+  function esc(v){
+    return String(v == null ? "" : v).replace(/[&<>"']/g, function(c){
+      return { "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;" }[c];
+    });
+  }
+  function todayStr(){
+    var d = new Date();
+    var m = String(d.getMonth() + 1).padStart(2, "0");
+    var day = String(d.getDate()).padStart(2, "0");
+    return d.getFullYear() + "-" + m + "-" + day;
+  }
+  function fmtQty(n){
+    n = Number(n) || 0;
+    var rounded = Math.round(n * 100) / 100;
+    return rounded.toLocaleString("en-US", { maximumFractionDigits: 2 });
+  }
+  function cargoStats(cargo){
+    var transported = 0;
+    (cargo.deliveries || []).forEach(function(d){ transported += Number(d.qty) || 0; });
+    var remaining = (Number(cargo.qty) || 0) - transported;
+    return { transported: transported, remaining: remaining };
+  }
+  function cargoRemainClass(cargo, stats){
+    if (cargo.done) return "val-success";
+    if (stats.remaining < 0) return "val-danger";
+    if (stats.transported > 0 && stats.remaining > 0) return "val-warning";
+    if (stats.remaining === 0 && stats.transported > 0) return "val-success";
+    return "val-neutral";
+  }
+  function shipStats(ship){
+    var cargoCount = 0, doneCount = 0, ownerCount = (ship.owners || []).length;
+    (ship.owners || []).forEach(function(o){
+      (o.cargos || []).forEach(function(c){
+        cargoCount++;
+        if (c.done) doneCount++;
+      });
+    });
+    return { ownerCount: ownerCount, cargoCount: cargoCount, doneCount: doneCount };
+  }
+  function matchesSearch(ship, q){
+    if (!q) return true;
+    q = q.toLowerCase();
+    if ((ship.name || "").toLowerCase().indexOf(q) > -1) return true;
+    return (ship.owners || []).some(function(o){
+      if ((o.name || "").toLowerCase().indexOf(q) > -1) return true;
+      return (o.cargos || []).some(function(c){
+        return (c.name || "").toLowerCase().indexOf(q) > -1 ||
+          (c.location || "").toLowerCase().indexOf(q) > -1;
+      });
+    });
+  }
+  function findShip(id){ return state.ships.find(function(s){ return s.id === id; }); }
+  function findOwner(ship, id){ return (ship.owners || []).find(function(o){ return o.id === id; }); }
+  function findCargo(owner, id){ return (owner.cargos || []).find(function(c){ return c.id === id; }); }
+  function addPreset(list, value){
+    value = (value || "").trim();
+    if (!value) return;
+    if (state[list].indexOf(value) === -1) state[list].push(value);
+  }
+
+  /* ---------------- mutations ---------------- */
+  function addShip(name){
+    name = (name || "").trim();
+    if (!name) return;
+    state.ships.push({ id: uid("ship"), name: name, closed: false, owners: [] });
+    persist();
+  }
+  function renameShip(id, name){
+    var s = findShip(id); if (!s) return;
+    name = (name || "").trim();
+    if (!name || name === s.name) { render(); return; }
+    s.name = name; persist();
+  }
+  function toggleShipClosed(id, closed){
+    var s = findShip(id); if (!s) return;
+    s.closed = !!closed; persist();
+  }
+  function deleteShip(id){
+    state.ships = state.ships.filter(function(s){ return s.id !== id; });
+    if (ui.nav.shipId === id) ui.nav = { screen: "ships", shipId: null, ownerId: null, cargoId: null };
+    persist();
+  }
+  function addOwner(shipId, name){
+    var s = findShip(shipId); if (!s) return;
+    name = (name || "").trim();
+    if (!name) return;
+    s.owners = s.owners || [];
+    s.owners.push({ id: uid("owner"), name: name, cargos: [] });
+    persist();
+  }
+  function renameOwner(shipId, ownerId, name){
+    var s = findShip(shipId); if (!s) return;
+    var o = findOwner(s, ownerId); if (!o) return;
+    name = (name || "").trim();
+    if (!name || name === o.name) { render(); return; }
+    o.name = name; persist();
+  }
+  function deleteOwner(shipId, ownerId){
+    var s = findShip(shipId); if (!s) return;
+    s.owners = (s.owners || []).filter(function(o){ return o.id !== ownerId; });
+    if (ui.nav.ownerId === ownerId) ui.nav = { screen: "owners", shipId: shipId, ownerId: null, cargoId: null };
+    persist();
+  }
+  function addCargo(shipId, ownerId, name, qty, unit, location){
+    var s = findShip(shipId); if (!s) return;
+    var o = findOwner(s, ownerId); if (!o) return;
+    name = (name || "").trim();
+    if (!name) return;
+    qty = Number(qty); if (!isFinite(qty) || qty < 0) qty = 0;
+    unit = unit || "噸";
+    location = (location || "").trim();
+    var cargo = { id: uid("cargo"), name: name, qty: qty, unit: unit, location: location, done: false, deliveries: [] };
+    if (location) addPreset("locationPresets", location);
+    o.cargos = o.cargos || [];
+    o.cargos.push(cargo);
+    addPreset("cargoPresets", name);
+    persist();
+  }
+  function editCargoLocation(shipId, ownerId, cargoId, location){
+    var s = findShip(shipId); if (!s) return;
+    var o = findOwner(s, ownerId); if (!o) return;
+    var c = findCargo(o, cargoId); if (!c) return;
+    location = (location || "").trim();
+    if (location === c.location) { render(); return; }
+    c.location = location;
+    if (location) addPreset("locationPresets", location);
+    persist();
+  }
+  function renameCargo(shipId, ownerId, cargoId, name){
+    var s = findShip(shipId); if (!s) return;
+    var o = findOwner(s, ownerId); if (!o) return;
+    var c = findCargo(o, cargoId); if (!c) return;
+    name = (name || "").trim();
+    if (!name || name === c.name) { render(); return; }
+    c.name = name; addPreset("cargoPresets", name); persist();
+  }
+  function editCargoQty(shipId, ownerId, cargoId, qty){
+    var s = findShip(shipId); if (!s) return;
+    var o = findOwner(s, ownerId); if (!o) return;
+    var c = findCargo(o, cargoId); if (!c) return;
+    qty = Number(qty); if (!isFinite(qty) || qty < 0) qty = 0;
+    c.qty = qty; persist();
+  }
+  function editCargoUnit(shipId, ownerId, cargoId, unit){
+    var s = findShip(shipId); if (!s) return;
+    var o = findOwner(s, ownerId); if (!o) return;
+    var c = findCargo(o, cargoId); if (!c) return;
+    c.unit = unit; persist();
+  }
+  function toggleCargoDone(shipId, ownerId, cargoId, done){
+    var s = findShip(shipId); if (!s) return;
+    var o = findOwner(s, ownerId); if (!o) return;
+    var c = findCargo(o, cargoId); if (!c) return;
+    c.done = !!done; persist();
+  }
+  function deleteCargo(shipId, ownerId, cargoId){
+    var s = findShip(shipId); if (!s) return;
+    var o = findOwner(s, ownerId); if (!o) return;
+    o.cargos = (o.cargos || []).filter(function(c){ return c.id !== cargoId; });
+    if (ui.nav.cargoId === cargoId) ui.nav = { screen: "cargos", shipId: shipId, ownerId: ownerId, cargoId: null };
+    persist();
+  }
+  function addDelivery(shipId, ownerId, cargoId, date, qty){
+    var s = findShip(shipId); if (!s) return;
+    var o = findOwner(s, ownerId); if (!o) return;
+    var c = findCargo(o, cargoId); if (!c) return;
+    qty = Number(qty); if (!isFinite(qty) || qty <= 0) return;
+    date = date || todayStr();
+    c.deliveries = c.deliveries || [];
+    c.deliveries.push({ id: uid("dlv"), date: date, qty: qty });
+    persist();
+  }
+  function deleteDelivery(shipId, ownerId, cargoId, deliveryId){
+    var s = findShip(shipId); if (!s) return;
+    var o = findOwner(s, ownerId); if (!o) return;
+    var c = findCargo(o, cargoId); if (!c) return;
+    c.deliveries = (c.deliveries || []).filter(function(d){ return d.id !== deliveryId; });
+    persist();
+  }
+  function findDelivery(cargo, id){
+    return (cargo.deliveries || []).find(function(d){ return d.id === id; });
+  }
+  function editDeliveryDate(shipId, ownerId, cargoId, deliveryId, date){
+    var s = findShip(shipId); if (!s) return;
+    var o = findOwner(s, ownerId); if (!o) return;
+    var c = findCargo(o, cargoId); if (!c) return;
+    var d = findDelivery(c, deliveryId); if (!d) return;
+    d.date = date || todayStr();
+    persist();
+  }
+  function editDeliveryQty(shipId, ownerId, cargoId, deliveryId, qty){
+    var s = findShip(shipId); if (!s) return;
+    var o = findOwner(s, ownerId); if (!o) return;
+    var c = findCargo(o, cargoId); if (!c) return;
+    var d = findDelivery(c, deliveryId); if (!d) return;
+    qty = Number(qty); if (!isFinite(qty) || qty < 0) qty = 0;
+    d.qty = qty; persist();
+  }
+
+  /* ---------------- two-step confirm ---------------- */
+  function isArmed(key){ return !!ui.confirmArm[key]; }
+  function arm(key){
+    Object.keys(ui.confirmArm).forEach(function(k){ delete ui.confirmArm[k]; });
+    ui.confirmArm[key] = Date.now();
+    render();
+    setTimeout(function(){
+      if (ui.confirmArm[key]) { delete ui.confirmArm[key]; render(); }
+    }, 4000);
+  }
+  function disarmAll(){ ui.confirmArm = {}; }
+
+  /* ---------------- rendering ---------------- */
+  function renderDoneVal(cls, text){ return '<span class="val ' + cls + '">' + text + "</span>"; }
+
+  function renderDeliveryRow(shipId, ownerId, cargo, d){
+    return (
+      '<div class="delivery-item">' +
+        '<div class="df"><span class="field-label">日期</span>' +
+          '<input type="date" class="tabular" value="' + esc(d.date) + '" ' +
+            'data-action="edit-delivery-date" data-ship="' + shipId + '" data-owner="' + ownerId + '" data-cargo="' + cargo.id + '" data-delivery="' + d.id + '"></div>' +
+        '<div class="df num"><span class="field-label">做了幾' + esc(cargo.unit) + '</span>' +
+          '<input type="number" class="tabular" min="0" step="0.01" value="' + d.qty + '" style="text-align:right;width:100%" ' +
+            'data-focus-key="dqty:' + d.id + '" ' +
+            'data-action="edit-delivery-qty" data-ship="' + shipId + '" data-owner="' + ownerId + '" data-cargo="' + cargo.id + '" data-delivery="' + d.id + '"></div>' +
+        '<div class="df actions">' +
+          '<button type="button" class="icon-btn' + (isArmed("dlv:" + d.id) ? " danger-arm" : "") + '" ' +
+            'data-action="delete-delivery" data-ship="' + shipId + '" data-owner="' + ownerId + '" data-cargo="' + cargo.id + '" data-delivery="' + d.id + '" ' +
+            'title="刪除">' + (isArmed("dlv:" + d.id) ? "確定?" : iconTrash()) + '</button>' +
+        '</div>' +
+      '</div>'
+    );
+  }
+
+  function renderDeliveryPanel(shipId, ownerId, cargo){
+    var stats = cargoStats(cargo);
+    var remainCls = cargoRemainClass(cargo, stats);
+    var rows = (cargo.deliveries || []).map(function(d){ return renderDeliveryRow(shipId, ownerId, cargo, d); }).join("");
+    return (
+      '<div class="delivery-wrap">' +
+        '<div class="delivery-summary">剩餘 ' + renderDoneVal(remainCls, fmtQty(stats.remaining)) + ' ' + esc(cargo.unit) +
+          '<span class="delivery-summary-sub">（總 ' + fmtQty(cargo.qty) + '，已做 ' + fmtQty(stats.transported) + '）</span></div>' +
+        '<div class="delivery-grid-head"><span>日期</span><span style="text-align:right">做了幾' + esc(cargo.unit) + '</span><span></span></div>' +
+        '<div class="delivery-grid">' +
+          (rows || '<div class="no-deliveries">尚無紀錄，於下方新增第一筆</div>') +
+        '</div>' +
+        '<form class="delivery-item" data-action="add-delivery" data-ship="' + shipId + '" data-owner="' + ownerId + '" data-cargo="' + cargo.id + '">' +
+          '<div class="df"><span class="field-label">日期</span>' +
+            '<input type="date" name="date" value="' + todayStr() + '" data-focus-key="newdate:' + cargo.id + '"></div>' +
+          '<div class="df num"><span class="field-label">做了幾' + esc(cargo.unit) + '</span>' +
+            '<input type="number" name="qty" placeholder="0" min="0" step="0.01" style="width:100%;text-align:right" required></div>' +
+          '<div class="df actions"><button type="submit" class="btn btn-sm btn-primary">＋ 新增</button></div>' +
+        '</form>' +
+      '</div>'
+    );
+  }
+
+  function renderCargoRow(shipId, ownerId, cargo){
+    var stats = cargoStats(cargo);
+    var remainCls = cargoRemainClass(cargo, stats);
+
+    return (
+      '<div class="cargo-row">' +
+      '<div class="cf"><span class="field-label">貨物</span>' +
+        '<button type="button" class="nav-name-btn cargo-nav-btn" ' +
+          'data-action="nav-to-deliveries" data-ship="' + shipId + '" data-owner="' + ownerId + '" data-cargo="' + cargo.id + '">' +
+          '<span>' + esc(cargo.name) + '</span>' + iconChevronRight() +
+        '</button></div>' +
+      '<div class="cf"><span class="field-label">送貨地點</span>' +
+        '<input type="text" class="cargo-name-input" value="' + esc(cargo.location || "") + '" placeholder="未填" list="location-presets" autocomplete="off" ' +
+          'data-focus-key="cloc:' + cargo.id + '" ' +
+          'data-action="edit-cargo-location" data-ship="' + shipId + '" data-owner="' + ownerId + '" data-cargo="' + cargo.id + '"></div>' +
+      '<div class="cf"><span class="field-label">總重量/台數</span><div class="qty-cell">' +
+        '<input type="number" class="qty-input tabular" min="0" step="0.01" value="' + cargo.qty + '" ' +
+          'data-focus-key="qty:' + cargo.id + '" ' +
+          'data-action="edit-cargo-qty" data-ship="' + shipId + '" data-owner="' + ownerId + '" data-cargo="' + cargo.id + '">' +
+        '<select class="unit-select" data-action="edit-cargo-unit" data-ship="' + shipId + '" data-owner="' + ownerId + '" data-cargo="' + cargo.id + '">' +
+          CARGO_UNITS.map(function(u){
+            return '<option value="' + u + '"' + (u === cargo.unit ? " selected" : "") + '>' + u + "</option>";
+          }).join("") +
+        '</select>' +
+      '</div></div>' +
+      '<div class="cf num"><span class="field-label">已運</span><span class="val val-neutral tabular">' + fmtQty(stats.transported) + '</span></div>' +
+      '<div class="cf num"><span class="field-label">剩餘</span>' + renderDoneVal(remainCls, fmtQty(stats.remaining)) + '</div>' +
+      '<div class="cf center"><span class="field-label">完工</span><input type="checkbox" class="done-checkbox" ' + (cargo.done ? "checked" : "") + ' ' +
+        'data-action="toggle-cargo-done" data-ship="' + shipId + '" data-owner="' + ownerId + '" data-cargo="' + cargo.id + '"></div>' +
+      '<div class="cf actions">' +
+        '<button type="button" class="icon-btn' + (isArmed("cargo:" + cargo.id) ? " danger-arm" : "") + '" ' +
+          'data-action="delete-cargo" data-ship="' + shipId + '" data-owner="' + ownerId + '" data-cargo="' + cargo.id + '" title="刪除貨物">' +
+          (isArmed("cargo:" + cargo.id) ? "確定?" : iconTrash()) +
+        '</button>' +
+      '</div>' +
+      '</div>'
+    );
+  }
+
+  /* ---- breadcrumb / screen header ---- */
+  function renderBreadcrumb(parts){
+    var out = "";
+    for (var i = 0; i < parts.length; i++) {
+      var p = parts[i];
+      if (i === parts.length - 1) {
+        out += '<span class="crumb-current">' + esc(p.label) + '</span>';
+      } else {
+        var attrs = 'data-action="nav-crumb" data-screen="' + p.screen + '"';
+        if (p.shipId) attrs += ' data-ship="' + p.shipId + '"';
+        if (p.ownerId) attrs += ' data-owner="' + p.ownerId + '"';
+        out += '<button type="button" class="crumb" ' + attrs + '>' + esc(p.label) + '</button><span class="crumb-sep">›</span>';
+      }
+    }
+    return '<div class="breadcrumb">' + out + '</div>';
+  }
+  function renderScreenHeader(breadcrumbParts, headerActionsHtml){
+    return (
+      '<div class="screen-header">' +
+        '<button type="button" class="back-btn" data-action="nav-back" title="返回上一頁">' + iconArrowLeft() + '</button>' +
+        renderBreadcrumb(breadcrumbParts) +
+        (headerActionsHtml ? '<div class="header-actions">' + headerActionsHtml + '</div>' : "") +
+      '</div>'
+    );
+  }
+
+  /* ---- screen 1: ships ---- */
+  function renderShipRow(ship){
+    var stats = shipStats(ship);
+    var pct = stats.cargoCount ? Math.round((stats.doneCount / stats.cargoCount) * 100) : 0;
+    return (
+      '<div class="nav-row' + (ship.closed ? " is-closed" : "") + '">' +
+        '<button type="button" class="nav-name-btn" data-action="nav-to-owners" data-ship="' + ship.id + '">' +
+          '<span>' + esc(ship.name) + '</span>' + iconChevronRight() +
+        '</button>' +
+        '<span class="pill' + (ship.closed ? " closed" : " active") + '">' + (ship.closed ? "已結案" : "進行中") + '</span>' +
+        '<div class="nav-row-meta">' +
+          '<span>' + stats.ownerCount + ' 貨主</span>' +
+          '<span>' + stats.cargoCount + ' 項貨物</span>' +
+          '<div class="mini-progress"><div class="track"><div class="fill" style="width:' + pct + '%"></div></div><span class="tabular">' + stats.doneCount + '/' + stats.cargoCount + '</span></div>' +
+        '</div>' +
+        '<div class="nav-row-actions">' +
+          '<label class="closed-toggle"><input type="checkbox" ' + (ship.closed ? "checked" : "") + ' ' +
+            'data-action="toggle-ship-closed" data-ship="' + ship.id + '"> 結案</label>' +
+          '<button type="button" class="icon-btn' + (isArmed("ship:" + ship.id) ? " danger-arm" : "") + '" ' +
+            'data-action="delete-ship" data-ship="' + ship.id + '" title="刪除船運">' +
+            (isArmed("ship:" + ship.id) ? "確定?" : iconTrash()) + '</button>' +
+        '</div>' +
+      '</div>'
+    );
+  }
+  function renderShipsScreen(){
+    var q = ui.search.trim();
+    var openShips = state.ships.filter(function(s){ return !s.closed && matchesSearch(s, q); });
+    var closedShips = state.ships.filter(function(s){ return s.closed && matchesSearch(s, q); });
+    var html = "";
+
+    html +=
+      '<form class="add-ship-form" data-action="add-ship">' +
+        '<input type="text" name="name" placeholder="輸入新船名，例如：長榮明號 / EVER GIVEN" data-focus-key="newship" required>' +
+        '<button type="submit" class="btn btn-primary">＋ 新增船運</button>' +
+      '</form>';
+
+    if (!state.ships.length) {
+      if (!initialLoadDone) {
+        html += '<div class="empty-state"><div class="big">' + iconRadar() + '</div><p>載入中…</p></div>';
+      } else {
+        html += '<div class="empty-state"><div class="big">' + iconShipOutline() + '</div><p>尚未建立任何船運資料</p><p>在上方輸入船名即可開始建立第一筆進口貨況</p></div>';
+      }
+      return html;
+    }
+
+    html += '<div class="section-label"><span>進行中船運</span><span class="count">' + openShips.length + '</span><span class="line"></span></div>';
+    html += openShips.length
+      ? '<div class="nav-list">' + openShips.map(renderShipRow).join("") + '</div>'
+      : '<div class="empty-state"><p>' + (q ? "沒有符合搜尋條件的進行中船運" : "目前沒有進行中的船運") + '</p></div>';
+
+    if (closedShips.length) {
+      var closedOpen = ui.showClosedSection || !!q;
+      html +=
+        '<div class="section-label">' +
+          '<button type="button" class="section-toggle" data-action="toggle-closed-section">' +
+            '<svg width="14" height="14" viewBox="0 0 20 20" fill="none" style="transform:rotate(' + (closedOpen ? 90 : 0) + 'deg);transition:.15s"><path d="M7 4l7 6-7 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>' +
+            '<span>已結案船運</span>' +
+          '</button>' +
+          '<span class="count">' + closedShips.length + '</span><span class="line"></span>' +
+        '</div>' +
+        '<div class="closed-section"' + (closedOpen ? "" : " hidden") + '><div class="nav-list">' +
+          closedShips.map(renderShipRow).join("") +
+        '</div></div>';
+    }
+    return html;
+  }
+
+  /* ---- screen 2: owners (for one ship) ---- */
+  function renderOwnerRow(ship, owner){
+    var cargos = owner.cargos || [];
+    var doneN = cargos.filter(function(c){ return c.done; }).length;
+    return (
+      '<div class="nav-row">' +
+        '<button type="button" class="nav-name-btn owner-nav-btn" data-action="nav-to-cargos" data-ship="' + ship.id + '" data-owner="' + owner.id + '">' +
+          '<span>' + esc(owner.name) + '</span>' + iconChevronRight() +
+        '</button>' +
+        '<div class="nav-row-meta"><span>' + cargos.length + ' 項貨物</span><span>' + doneN + '/' + cargos.length + ' 完工</span></div>' +
+        '<div class="nav-row-actions">' +
+          '<button type="button" class="icon-btn' + (isArmed("owner:" + owner.id) ? " danger-arm" : "") + '" ' +
+            'data-action="delete-owner" data-ship="' + ship.id + '" data-owner="' + owner.id + '" title="刪除貨主">' +
+            (isArmed("owner:" + owner.id) ? "確定?" : iconTrash()) + '</button>' +
+        '</div>' +
+      '</div>'
+    );
+  }
+  function renderOwnersScreen(ship){
+    var owners = ship.owners || [];
+    var headerActions =
+      '<label class="closed-toggle"><input type="checkbox" ' + (ship.closed ? "checked" : "") + ' ' +
+        'data-action="toggle-ship-closed" data-ship="' + ship.id + '"> 結案</label>' +
+      '<button type="button" class="icon-btn' + (isArmed("ship:" + ship.id) ? " danger-arm" : "") + '" ' +
+        'data-action="delete-ship" data-ship="' + ship.id + '" title="刪除船運">' +
+        (isArmed("ship:" + ship.id) ? "確定?" : iconTrash()) + '</button>';
+    var html = renderScreenHeader([
+      { label: "船運", screen: "ships" },
+      { label: ship.name }
+    ], headerActions);
+
+    html += '<div class="info-card"><div class="info-field"><label>船名</label>' +
+      '<input type="text" class="ship-name-input" value="' + esc(ship.name) + '" ' +
+        'data-focus-key="sname:' + ship.id + '" data-action="rename-ship" data-ship="' + ship.id + '"></div></div>';
+
+    html +=
+      '<form class="add-row" data-action="add-owner" data-ship="' + ship.id + '">' +
+        '<div class="field grow"><span class="field-label">新增貨主</span>' +
+          '<input type="text" name="name" placeholder="貨主名稱" required></div>' +
+        '<button type="submit" class="btn btn-sm btn-primary">＋ 新增貨主</button>' +
+      '</form>';
+
+    if (owners.length) {
+      html += '<div class="nav-list" style="margin-top:16px;">' + owners.map(function(o){ return renderOwnerRow(ship, o); }).join("") + '</div>';
+    } else {
+      html += '<div class="empty-state"><p>尚無貨主，於上方新增</p></div>';
+    }
+    return html;
+  }
+
+  /* ---- screen 3: cargos (for one owner) ---- */
+  function renderCargosScreen(ship, owner){
+    var cargos = owner.cargos || [];
+    var headerActions =
+      '<button type="button" class="icon-btn' + (isArmed("owner:" + owner.id) ? " danger-arm" : "") + '" ' +
+        'data-action="delete-owner" data-ship="' + ship.id + '" data-owner="' + owner.id + '" title="刪除貨主">' +
+        (isArmed("owner:" + owner.id) ? "確定?" : iconTrash()) + '</button>';
+    var html = renderScreenHeader([
+      { label: "船運", screen: "ships" },
+      { label: ship.name, screen: "owners", shipId: ship.id },
+      { label: owner.name }
+    ], headerActions);
+
+    html += '<div class="info-card"><div class="info-field"><label>貨主名稱</label>' +
+      '<input type="text" class="owner-name-input" value="' + esc(owner.name) + '" ' +
+        'data-focus-key="oname:' + owner.id + '" data-action="rename-owner" data-ship="' + ship.id + '" data-owner="' + owner.id + '"></div></div>';
+
+    html +=
+      '<form class="add-row" data-action="add-cargo" data-ship="' + ship.id + '" data-owner="' + owner.id + '">' +
+        '<div class="field grow"><span class="field-label">貨物名稱</span>' +
+          '<input type="text" name="name" placeholder="例如：鋼捲" list="cargo-presets" autocomplete="off" required></div>' +
+        '<div class="field"><span class="field-label">總重量/台數</span>' +
+          '<input type="number" name="qty" placeholder="0" min="0" step="0.01" style="width:110px"></div>' +
+        '<div class="field"><span class="field-label">單位</span>' +
+          '<select name="unit" class="unit-select">' +
+            CARGO_UNITS.map(function(u){ return '<option value="' + u + '">' + u + "</option>"; }).join("") +
+          '</select></div>' +
+        '<div class="field grow"><span class="field-label">送貨地點（可先留空）</span>' +
+          '<input type="text" name="location" placeholder="例如：高雄港" list="location-presets" autocomplete="off"></div>' +
+        '<button type="submit" class="btn btn-sm btn-primary">＋ 新增貨物</button>' +
+      '</form>';
+
+    if (cargos.length) {
+      html += '<div class="cargo-grid" style="margin-top:16px;">' +
+        '<div class="cargo-grid-head"><span>貨物</span><span>送貨地點</span><span>總重量/台數</span><span style="text-align:right">已運</span><span style="text-align:right">剩餘</span><span style="text-align:center">完工</span><span></span></div>' +
+        cargos.map(function(c){ return renderCargoRow(ship.id, owner.id, c); }).join("") +
+      '</div>';
+    } else {
+      html += '<div class="empty-state"><p>尚無貨物，於上方新增</p></div>';
+    }
+    return html;
+  }
+
+  /* ---- screen 4: delivery detail (for one cargo) ---- */
+  function renderDeliveriesScreen(ship, owner, cargo){
+    var headerActions =
+      '<button type="button" class="icon-btn' + (isArmed("cargo:" + cargo.id) ? " danger-arm" : "") + '" ' +
+        'data-action="delete-cargo" data-ship="' + ship.id + '" data-owner="' + owner.id + '" data-cargo="' + cargo.id + '" title="刪除貨物">' +
+        (isArmed("cargo:" + cargo.id) ? "確定?" : iconTrash()) + '</button>';
+    var html = renderScreenHeader([
+      { label: "船運", screen: "ships" },
+      { label: ship.name, screen: "owners", shipId: ship.id },
+      { label: owner.name, screen: "cargos", shipId: ship.id, ownerId: owner.id },
+      { label: cargo.name }
+    ], headerActions);
+
+    html += '<div class="info-card"><div class="info-grid">' +
+      '<div class="info-field"><label>貨物名稱</label>' +
+        '<input type="text" class="cargo-name-input" value="' + esc(cargo.name) + '" list="cargo-presets" autocomplete="off" ' +
+          'data-focus-key="cname:' + cargo.id + '" data-action="rename-cargo" data-ship="' + ship.id + '" data-owner="' + owner.id + '" data-cargo="' + cargo.id + '"></div>' +
+      '<div class="info-field"><label>送貨地點</label>' +
+        '<input type="text" class="cargo-name-input" value="' + esc(cargo.location || "") + '" placeholder="未填" list="location-presets" autocomplete="off" ' +
+          'data-focus-key="cloc:' + cargo.id + '" data-action="edit-cargo-location" data-ship="' + ship.id + '" data-owner="' + owner.id + '" data-cargo="' + cargo.id + '"></div>' +
+      '<div class="info-field"><label>總重量/台數</label><div class="qty-cell">' +
+        '<input type="number" class="qty-input tabular" min="0" step="0.01" value="' + cargo.qty + '" ' +
+          'data-focus-key="qty:' + cargo.id + '" data-action="edit-cargo-qty" data-ship="' + ship.id + '" data-owner="' + owner.id + '" data-cargo="' + cargo.id + '">' +
+        '<select class="unit-select" data-action="edit-cargo-unit" data-ship="' + ship.id + '" data-owner="' + owner.id + '" data-cargo="' + cargo.id + '">' +
+          CARGO_UNITS.map(function(u){ return '<option value="' + u + '"' + (u === cargo.unit ? " selected" : "") + '>' + u + "</option>"; }).join("") +
+        '</select></div></div>' +
+      '<div class="info-field center"><label>完工</label><input type="checkbox" class="done-checkbox" ' + (cargo.done ? "checked" : "") + ' ' +
+        'data-action="toggle-cargo-done" data-ship="' + ship.id + '" data-owner="' + owner.id + '" data-cargo="' + cargo.id + '"></div>' +
+    '</div></div>';
+
+    html += renderDeliveryPanel(ship.id, owner.id, cargo);
+    return html;
+  }
+
+  /* ---- navigation state helpers ---- */
+  function navigateTo(screen, shipId, ownerId, cargoId){
+    ui.nav = { screen: screen, shipId: shipId || null, ownerId: ownerId || null, cargoId: cargoId || null };
+    disarmAll();
+    render();
+  }
+  function sanitizeNav(){
+    var n = ui.nav;
+    if (n.screen === "ships") return;
+    var ship = findShip(n.shipId);
+    if (!ship) { ui.nav = { screen: "ships", shipId: null, ownerId: null, cargoId: null }; return; }
+    if (n.screen === "owners") return;
+    var owner = findOwner(ship, n.ownerId);
+    if (!owner) { ui.nav = { screen: "owners", shipId: n.shipId, ownerId: null, cargoId: null }; return; }
+    if (n.screen === "cargos") return;
+    var cargo = findCargo(owner, n.cargoId);
+    if (!cargo) { ui.nav = { screen: "cargos", shipId: n.shipId, ownerId: n.ownerId, cargoId: null }; return; }
+  }
+
+  function iconTrash(){
+    return '<svg viewBox="0 0 20 20" fill="none"><path d="M4 6h12M8 6V4.5A1.5 1.5 0 019.5 3h1A1.5 1.5 0 0112 4.5V6m-6.5 0l.6 9.4A1.5 1.5 0 007.6 17h4.8a1.5 1.5 0 001.5-1.6L14.5 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+  }
+  function iconSearch(){
+    return '<svg width="14" height="14" viewBox="0 0 20 20" fill="none"><circle cx="9" cy="9" r="6" stroke="currentColor" stroke-width="1.6"/><path d="M17 17l-3.5-3.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>';
+  }
+  function iconChevronRight(){
+    return '<svg class="chevron-right" viewBox="0 0 20 20" fill="none"><path d="M7 4l7 6-7 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+  }
+  function iconArrowLeft(){
+    return '<svg viewBox="0 0 20 20" fill="none"><path d="M12 4l-6 6 6 6M6 10h10" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+  }
+  function iconContainer(){
+    return '<svg viewBox="0 0 24 24" fill="none">' +
+      '<rect x="2.5" y="6.5" width="19" height="11" rx="1.4" stroke="currentColor" stroke-width="1.6"/>' +
+      '<path d="M6.5 6.5v11M10.5 6.5v11M14.5 6.5v11M18.5 6.5v11" stroke="currentColor" stroke-width="1" opacity=".5"/>' +
+      '<circle cx="5" cy="19.3" r="1.05" fill="currentColor"/><circle cx="19" cy="19.3" r="1.05" fill="currentColor"/>' +
+    '</svg>';
+  }
+  function iconShipOutline(){
+    return '<svg viewBox="0 0 48 48" fill="none">' +
+      '<path d="M6 30h36l-4.2 9.3a3 3 0 01-2.73 1.7H12.93a3 3 0 01-2.73-1.7L6 30z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/>' +
+      '<path d="M12.5 30V19a2 2 0 012-2h5.5v13M22.5 30V14a2 2 0 012-2h4a2 2 0 012 2v16" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/>' +
+      '<path d="M4 35.5c3 2 6 2 9 0s6-2 9 0 6 2 9 0 6-2 9 0" stroke="currentColor" stroke-width="1.5" opacity=".5"/>' +
+    '</svg>';
+  }
+  function iconRadar(){
+    return '<svg class="icon-spin" viewBox="0 0 24 24" fill="none">' +
+      '<circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.4" opacity=".25"/>' +
+      '<path d="M12 3a9 9 0 019 9" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>' +
+    '</svg>';
+  }
+
+  function statusLabel(){
+    switch (ui.saveStatus) {
+      case "synced": return { cls: "synced", text: "已同步" };
+      case "saving": return { cls: "saving", text: "儲存中…" };
+      case "error": return { cls: "error", text: "儲存失敗" };
+      default: return { cls: "unavailable", text: "連線中…" };
+    }
+  }
+
+  function renderBanner(){
+    if (ui.saveStatus === "error") {
+      return '<div class="banner error">儲存失敗：' + esc(ui.lastErrorMsg || "請重試") + '<button type="button" data-action="retry-save">重試</button></div>';
+    }
+    return "";
+  }
+
+  function renderPresets(){
+    return (
+      '<datalist id="cargo-presets">' + state.cargoPresets.map(function(v){ return '<option value="' + esc(v) + '">'; }).join("") + '</datalist>' +
+      '<datalist id="location-presets">' + state.locationPresets.map(function(v){ return '<option value="' + esc(v) + '">'; }).join("") + '</datalist>'
+    );
+  }
+
+  function renderApp(){
+    sanitizeNav();
+    var st = statusLabel();
+    var showSearch = ui.nav.screen === "ships";
+
+    var topbar =
+      '<div class="topbar"><div class="topbar-inner">' +
+        '<div class="brand"><div class="brand-mark">' + iconContainer() + '</div>' +
+          '<div class="brand-text"><span class="eyebrow">Trucking · Import Cargo</span><span class="brand-title">進口貨況看板</span></div></div>' +
+        (showSearch ?
+          '<div class="search-wrap">' + iconSearch() +
+            '<input type="text" class="search-input" placeholder="搜尋船名 / 貨主 / 貨物" value="' + esc(ui.search) + '" ' +
+              'data-focus-key="search" data-role="search-input">' +
+          '</div>' : "") +
+        '<span class="status-pill ' + st.cls + '"><span class="status-dot"></span>' + st.text + '</span>' +
+      '</div></div>';
+
+    var body = '<div class="container">';
+    body += renderBanner();
+
+    var screen = ui.nav.screen;
+    if (screen === "owners") {
+      body += renderOwnersScreen(findShip(ui.nav.shipId));
+    } else if (screen === "cargos") {
+      var ship1 = findShip(ui.nav.shipId);
+      body += renderCargosScreen(ship1, findOwner(ship1, ui.nav.ownerId));
+    } else if (screen === "deliveries") {
+      var ship2 = findShip(ui.nav.shipId);
+      var owner2 = findOwner(ship2, ui.nav.ownerId);
+      body += renderDeliveriesScreen(ship2, owner2, findCargo(owner2, ui.nav.cargoId));
+    } else {
+      body += renderShipsScreen();
+    }
+
+    body += '<footer class="hint">資料為團隊共用即時看板，任何人新增或修改都會同步給所有檢視者</footer>';
+    body += '</div>';
+
+    var toastHtml = ui.flashMsg ? '<div class="toast">' + esc(ui.flashMsg) + '</div>' : "";
+    return topbar + body + renderPresets() + toastHtml;
+  }
+
+  /* ---------------- focus-preserving render ---------------- */
+  function render(){
+    var active = document.activeElement;
+    var key = active && active.getAttribute ? active.getAttribute("data-focus-key") : null;
+    var selStart = null, selEnd = null;
+    if (key && active && "selectionStart" in active) {
+      try { selStart = active.selectionStart; selEnd = active.selectionEnd; } catch (e) {}
+    }
+    var scrollY = window.scrollY;
+    var root = document.getElementById("app");
+    root.innerHTML = renderApp();
+    if (key) {
+      var el = root.querySelector('[data-focus-key="' + cssEscape(key) + '"]');
+      if (el) {
+        el.focus();
+        if (selStart != null && "setSelectionRange" in el) {
+          try { el.setSelectionRange(selStart, selEnd); } catch (e) {}
+        }
+      }
+    }
+    window.scrollTo(0, scrollY);
+    saveUiState();
+  }
+  function cssEscape(s){
+    return String(s).replace(/[^a-zA-Z0-9_\-]/g, function(c){ return "\\" + c; });
+  }
+
+  /* ---------------- persistence ----------------
+     Plain REST sync against this app's own tiny Express server: GET
+     /api/state to read, POST /api/state to write (last-write-wins). A
+     background poll picks up other people's changes; it's skipped while
+     the viewer has an input focused so it never clobbers an in-progress
+     edit. */
+  var hasLocalEdits = false;
+
+  function fetchServerState(){
+    return fetch("/api/state", { cache: "no-store" }).then(function(res){
+      if (!res.ok) return null;
+      return res.json();
+    }).catch(function(){ return null; });
+  }
+
+  var flashTimer = null;
+  function flash(msg){
+    ui.flashMsg = msg;
+    render();
+    clearTimeout(flashTimer);
+    flashTimer = setTimeout(function(){ ui.flashMsg = ""; render(); }, 3800);
+  }
+
+  function persist(){
+    disarmAll();
+    hasLocalEdits = true;
+    ui.saveStatus = "saving";
+    render();
+    fetch("/api/state", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(state)
+    }).then(function(res){
+      if (!res.ok) throw new Error("伺服器回應 HTTP " + res.status);
+      return res.json();
+    }).then(function(){
+      ui.saveStatus = "synced";
+      render();
+    }).catch(function(err){
+      ui.saveStatus = "error";
+      ui.lastErrorMsg = (err && err.message) || String(err || "未知錯誤");
+      render();
+    });
+  }
+  function retrySave(){
+    persist();
+  }
+
+  /* ---------------- event delegation ---------------- */
+  var app = document.getElementById("app");
+
+  app.addEventListener("submit", function(e){
+    var form = e.target.closest("form[data-action]");
+    if (!form) return;
+    e.preventDefault();
+    var action = form.getAttribute("data-action");
+    var fd = new FormData(form);
+    if (action === "add-ship") {
+      addShip(fd.get("name"));
+    } else if (action === "add-owner") {
+      addOwner(form.getAttribute("data-ship"), fd.get("name"));
+    } else if (action === "add-cargo") {
+      addCargo(form.getAttribute("data-ship"), form.getAttribute("data-owner"), fd.get("name"), fd.get("qty"), fd.get("unit"), fd.get("location"));
+    } else if (action === "add-delivery") {
+      addDelivery(form.getAttribute("data-ship"), form.getAttribute("data-owner"), form.getAttribute("data-cargo"), fd.get("date"), fd.get("qty"));
+    }
+  });
+
+  app.addEventListener("click", function(e){
+    var target = e.target.closest("[data-action]");
+    if (!target) return;
+    var action = target.getAttribute("data-action");
+    if (action === "nav-to-owners") {
+      navigateTo("owners", target.getAttribute("data-ship"));
+    } else if (action === "nav-to-cargos") {
+      navigateTo("cargos", target.getAttribute("data-ship"), target.getAttribute("data-owner"));
+    } else if (action === "nav-to-deliveries") {
+      navigateTo("deliveries", target.getAttribute("data-ship"), target.getAttribute("data-owner"), target.getAttribute("data-cargo"));
+    } else if (action === "nav-crumb") {
+      navigateTo(target.getAttribute("data-screen"), target.getAttribute("data-ship"), target.getAttribute("data-owner"));
+    } else if (action === "nav-back") {
+      var cur = ui.nav;
+      if (cur.screen === "deliveries") navigateTo("cargos", cur.shipId, cur.ownerId);
+      else if (cur.screen === "cargos") navigateTo("owners", cur.shipId);
+      else navigateTo("ships");
+    } else if (action === "toggle-closed-section") {
+      ui.showClosedSection = !ui.showClosedSection;
+      render();
+    } else if (action === "delete-ship") {
+      var id = target.getAttribute("data-ship");
+      if (isArmed("ship:" + id)) deleteShip(id); else arm("ship:" + id);
+    } else if (action === "delete-owner") {
+      var sId = target.getAttribute("data-ship"), oId = target.getAttribute("data-owner");
+      if (isArmed("owner:" + oId)) deleteOwner(sId, oId); else arm("owner:" + oId);
+    } else if (action === "delete-cargo") {
+      var sId2 = target.getAttribute("data-ship"), oId2 = target.getAttribute("data-owner"), cId = target.getAttribute("data-cargo");
+      if (isArmed("cargo:" + cId)) deleteCargo(sId2, oId2, cId); else arm("cargo:" + cId);
+    } else if (action === "delete-delivery") {
+      var sId3 = target.getAttribute("data-ship"), oId3 = target.getAttribute("data-owner"), cId3 = target.getAttribute("data-cargo"), dId = target.getAttribute("data-delivery");
+      if (isArmed("dlv:" + dId)) deleteDelivery(sId3, oId3, cId3, dId); else arm("dlv:" + dId);
+    } else if (action === "retry-save") {
+      retrySave();
+    }
+  });
+
+  app.addEventListener("change", function(e){
+    var t = e.target;
+    if (!t.matches("[data-action]")) return;
+    var action = t.getAttribute("data-action");
+    if (action === "toggle-ship-closed") {
+      toggleShipClosed(t.getAttribute("data-ship"), t.checked);
+    } else if (action === "toggle-cargo-done") {
+      toggleCargoDone(t.getAttribute("data-ship"), t.getAttribute("data-owner"), t.getAttribute("data-cargo"), t.checked);
+    } else if (action === "edit-cargo-unit") {
+      editCargoUnit(t.getAttribute("data-ship"), t.getAttribute("data-owner"), t.getAttribute("data-cargo"), t.value);
+    } else if (action === "edit-delivery-date") {
+      editDeliveryDate(t.getAttribute("data-ship"), t.getAttribute("data-owner"), t.getAttribute("data-cargo"), t.getAttribute("data-delivery"), t.value);
+    }
+  });
+
+  app.addEventListener("focusout", function(e){
+    var t = e.target;
+    if (!t.matches("[data-action]")) return;
+    var action = t.getAttribute("data-action");
+    if (action === "rename-ship") {
+      renameShip(t.getAttribute("data-ship"), t.value);
+    } else if (action === "rename-owner") {
+      renameOwner(t.getAttribute("data-ship"), t.getAttribute("data-owner"), t.value);
+    } else if (action === "rename-cargo") {
+      renameCargo(t.getAttribute("data-ship"), t.getAttribute("data-owner"), t.getAttribute("data-cargo"), t.value);
+    } else if (action === "edit-cargo-qty") {
+      editCargoQty(t.getAttribute("data-ship"), t.getAttribute("data-owner"), t.getAttribute("data-cargo"), t.value);
+    } else if (action === "edit-cargo-location") {
+      editCargoLocation(t.getAttribute("data-ship"), t.getAttribute("data-owner"), t.getAttribute("data-cargo"), t.value);
+    } else if (action === "edit-delivery-qty") {
+      editDeliveryQty(t.getAttribute("data-ship"), t.getAttribute("data-owner"), t.getAttribute("data-cargo"), t.getAttribute("data-delivery"), t.value);
+    }
+  });
+
+  app.addEventListener("keydown", function(e){
+    if (e.key !== "Enter") return;
+    var t = e.target;
+    if (t.matches('input[data-action="rename-ship"], input[data-action="rename-owner"], input[data-action="rename-cargo"], input[data-action="edit-cargo-qty"], input[data-action="edit-cargo-location"], input[data-action="edit-delivery-qty"]')) {
+      e.preventDefault();
+      t.blur();
+    }
+  });
+
+  app.addEventListener("input", function(e){
+    var t = e.target;
+    if (t.matches('[data-role="search-input"]')) {
+      ui.search = t.value;
+      render();
+    }
+  });
+
+  /* ---------------- init ---------------- */
+  render();
+
+  fetchServerState().then(function(server){
+    if (!hasLocalEdits && server && Array.isArray(server.ships)) {
+      server.cargoPresets = server.cargoPresets || [];
+      server.locationPresets = server.locationPresets || [];
+      state = server;
+    }
+    initialLoadDone = true;
+    ui.saveStatus = "synced";
+    render();
+  });
+
+  /* Poll for changes made by other people. Skipped while the viewer has a
+     shared-data field focused (so their in-progress keystrokes are never
+     overwritten) or while a save is already in flight. */
+  setInterval(function(){
+    var active = document.activeElement;
+    var isEditingField = active && app.contains(active) &&
+      (active.tagName === "INPUT" || active.tagName === "SELECT" || active.tagName === "TEXTAREA");
+    if (isEditingField || ui.saveStatus === "saving") return;
+    fetchServerState().then(function(server){
+      if (!server || !Array.isArray(server.ships)) return;
+      server.cargoPresets = server.cargoPresets || [];
+      server.locationPresets = server.locationPresets || [];
+      if (JSON.stringify(server) !== JSON.stringify(state)) {
+        state = server;
+        render();
+      }
+    });
+  }, 4000);
+})();
+</script>
+</body>
+</html>
