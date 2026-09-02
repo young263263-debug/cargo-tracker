@@ -128,6 +128,61 @@ h1,h2,h3{text-wrap:balance;margin:0;}
 .status-pill.unavailable .status-dot{background:var(--text-faint);}
 @keyframes pulse{0%,100%{opacity:1;}50%{opacity:.3;}}
 
+.hamburger-btn{
+  width:36px;height:36px;flex:none;border-radius:9px;border:1px solid var(--border-strong);
+  background:var(--surface);color:var(--text-dim);cursor:pointer;display:inline-flex;align-items:center;justify-content:center;
+  transition:.14s;
+}
+.hamburger-btn:hover{color:var(--accent);border-color:var(--accent);}
+.hamburger-btn svg{width:18px;height:18px;}
+
+/* ---------- ship menu drawer ---------- */
+.menu-backdrop{
+  position:fixed;inset:0;background:rgba(4,7,14,.55);z-index:40;
+  opacity:0;pointer-events:none;transition:opacity .18s;
+}
+.menu-backdrop.open{opacity:1;pointer-events:auto;}
+.ship-menu{
+  position:fixed;top:0;left:0;bottom:0;width:300px;max-width:86vw;
+  background:var(--bg-elevated);border-right:1px solid var(--border);
+  box-shadow:var(--shadow-lg);z-index:41;
+  display:flex;flex-direction:column;
+  transform:translateX(-100%);transition:transform .2s ease;
+}
+.ship-menu.open{transform:translateX(0);}
+.menu-header{
+  display:flex;align-items:center;justify-content:space-between;gap:10px;
+  padding:16px 14px 14px 18px;border-bottom:1px solid var(--border);flex:none;
+}
+.menu-header h2{font-family:var(--font-display);font-size:1.05rem;font-weight:700;color:var(--text);}
+.menu-close-btn{
+  width:30px;height:30px;flex:none;border-radius:8px;border:1px solid var(--border-strong);
+  background:var(--surface);color:var(--text-dim);cursor:pointer;display:inline-flex;align-items:center;justify-content:center;
+}
+.menu-close-btn:hover{color:var(--accent);border-color:var(--accent);}
+.menu-close-btn svg{width:14px;height:14px;}
+.menu-body{flex:1;overflow-y:auto;padding:10px 10px 20px;}
+.menu-month-group{margin-bottom:2px;}
+.menu-month-toggle{
+  width:100%;display:flex;align-items:center;gap:9px;background:none;border:none;cursor:pointer;
+  padding:10px 8px;border-radius:8px;color:var(--text-dim);font-family:var(--font-mono);font-size:.84rem;letter-spacing:.02em;
+}
+.menu-month-toggle:hover{background:var(--surface-2);color:var(--text);}
+.menu-month-toggle svg{flex:none;color:var(--text-faint);}
+.menu-month-toggle .month-label{font-weight:700;color:var(--text);font-family:var(--font-display);font-size:.92rem;}
+.menu-month-toggle .month-count{margin-left:auto;background:var(--surface-3);color:var(--text-dim);border-radius:999px;padding:1px 8px;font-size:.7rem;font-family:var(--font-mono);}
+.menu-ship-list{display:flex;flex-direction:column;gap:2px;padding:2px 4px 12px 28px;}
+.menu-ship-list[hidden]{display:none;}
+.menu-ship-btn{
+  display:flex;align-items:center;gap:8px;background:none;border:none;cursor:pointer;
+  text-align:left;padding:8px 10px;border-radius:7px;color:var(--text-dim);font-size:.88rem;width:100%;
+}
+.menu-ship-btn:hover{background:var(--surface-2);color:var(--text);}
+.menu-ship-btn.active{background:var(--accent-soft);color:var(--accent-strong);font-weight:700;}
+.menu-ship-btn span:first-child{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0;}
+.menu-ship-btn .pill{margin-left:auto;flex:none;}
+.menu-empty{color:var(--text-faint);font-size:.84rem;padding:24px 14px;text-align:center;}
+
 /* ---------- layout ---------- */
 .container{max-width:1180px;margin:0 auto;padding:22px 20px 80px;position:relative;z-index:1;}
 .banner{
@@ -515,7 +570,9 @@ footer.hint{margin-top:36px;text-align:center;color:var(--text-faint);font-size:
       confirmArm: {},
       saveStatus: "connecting",
       lastErrorMsg: "",
-      flashMsg: ""
+      flashMsg: "",
+      menuOpen: false,
+      expandedMonths: {}
     };
     try {
       var raw = sessionStorage.getItem("cargoTrackerUi");
@@ -598,6 +655,36 @@ footer.hint{margin-top:36px;text-align:center;color:var(--text-faint);font-size:
       ownerCount: ownerCount, cargoCount: cargoCount, doneCount: doneCount, pct: pct
     };
   }
+  function rocYearMonthOf(dateStr){
+    if (!dateStr) return null;
+    var parts = String(dateStr).split("-");
+    var y = parseInt(parts[0], 10), m = parseInt(parts[1], 10);
+    if (!y || !m) return null;
+    var rocYear = y - 1911;
+    return { key: rocYear + "-" + String(m).padStart(2, "0"), rocYear: rocYear, month: m, label: rocYear + "/" + m };
+  }
+  function groupShipsForMenu(){
+    var groupsByKey = {};
+    var uncategorized = [];
+    state.ships.forEach(function(ship){
+      var rm = rocYearMonthOf(ship.createdAt);
+      if (!rm) { uncategorized.push(ship); return; }
+      if (!groupsByKey[rm.key]) {
+        groupsByKey[rm.key] = { key: rm.key, label: rm.label, rocYear: rm.rocYear, month: rm.month, ships: [] };
+      }
+      groupsByKey[rm.key].ships.push(ship);
+    });
+    var groups = Object.keys(groupsByKey).map(function(k){ return groupsByKey[k]; });
+    groups.sort(function(a, b){
+      if (a.rocYear !== b.rocYear) return b.rocYear - a.rocYear;
+      return b.month - a.month;
+    });
+    groups.forEach(function(g){ g.ships = g.ships.slice().reverse(); });
+    if (uncategorized.length) {
+      groups.push({ key: "unknown", label: "未分類", rocYear: null, month: null, ships: uncategorized.slice().reverse() });
+    }
+    return groups;
+  }
   function matchesSearch(ship, q){
     if (!q) return true;
     q = q.toLowerCase();
@@ -623,7 +710,7 @@ footer.hint{margin-top:36px;text-align:center;color:var(--text-faint);font-size:
   function addShip(name){
     name = (name || "").trim();
     if (!name) return;
-    state.ships.push({ id: uid("ship"), name: name, closed: false, owners: [] });
+    state.ships.push({ id: uid("ship"), name: name, closed: false, owners: [], createdAt: todayStr() });
     persist();
   }
   function renameShip(id, name){
@@ -1125,6 +1212,12 @@ footer.hint{margin-top:36px;text-align:center;color:var(--text-faint);font-size:
   function iconArrowLeft(){
     return '<svg viewBox="0 0 20 20" fill="none"><path d="M12 4l-6 6 6 6M6 10h10" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
   }
+  function iconMenu(){
+    return '<svg viewBox="0 0 20 20" fill="none"><path d="M3 5.5h14M3 10h14M3 14.5h14" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>';
+  }
+  function iconClose(){
+    return '<svg viewBox="0 0 20 20" fill="none"><path d="M5 5l10 10M15 5L5 15" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>';
+  }
   function iconContainer(){
     return '<svg viewBox="0 0 24 24" fill="none">' +
       '<rect x="2.5" y="6.5" width="19" height="11" rx="1.4" stroke="currentColor" stroke-width="1.6"/>' +
@@ -1162,6 +1255,47 @@ footer.hint{margin-top:36px;text-align:center;color:var(--text-faint);font-size:
     return "";
   }
 
+  function renderShipMenu(){
+    var groups = groupShipsForMenu();
+    var activeShipId = ui.nav.shipId;
+    var bodyHtml;
+    if (!groups.length) {
+      bodyHtml = '<div class="menu-empty">尚未建立任何船運</div>';
+    } else {
+      bodyHtml = groups.map(function(g, idx){
+        var expanded = ui.expandedMonths.hasOwnProperty(g.key) ? !!ui.expandedMonths[g.key] : (idx === 0);
+        return (
+          '<div class="menu-month-group">' +
+            '<button type="button" class="menu-month-toggle" data-action="toggle-month-group" data-month-key="' + esc(g.key) + '">' +
+              '<svg width="13" height="13" viewBox="0 0 20 20" fill="none" style="transform:rotate(' + (expanded ? 90 : 0) + 'deg);transition:.15s"><path d="M7 4l7 6-7 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>' +
+              '<span class="month-label">' + esc(g.label) + '</span>' +
+              '<span class="month-count">' + g.ships.length + '</span>' +
+            '</button>' +
+            '<div class="menu-ship-list"' + (expanded ? "" : " hidden") + '>' +
+              g.ships.map(function(s){
+                return (
+                  '<button type="button" class="menu-ship-btn' + (s.id === activeShipId ? " active" : "") + '" data-action="menu-nav-to-ship" data-ship="' + s.id + '">' +
+                    '<span>' + esc(s.name) + '</span>' +
+                    (s.closed ? '<span class="pill closed">已結案</span>' : "") +
+                  '</button>'
+                );
+              }).join("") +
+            '</div>' +
+          '</div>'
+        );
+      }).join("");
+    }
+    return (
+      '<div class="menu-backdrop' + (ui.menuOpen ? " open" : "") + '" data-action="close-menu"></div>' +
+      '<div class="ship-menu' + (ui.menuOpen ? " open" : "") + '">' +
+        '<div class="menu-header"><h2>船運選單</h2>' +
+          '<button type="button" class="menu-close-btn" data-action="close-menu" title="關閉選單">' + iconClose() + '</button>' +
+        '</div>' +
+        '<div class="menu-body">' + bodyHtml + '</div>' +
+      '</div>'
+    );
+  }
+
   function renderPresets(){
     return (
       '<datalist id="cargo-presets">' + state.cargoPresets.map(function(v){ return '<option value="' + esc(v) + '">'; }).join("") + '</datalist>' +
@@ -1176,6 +1310,7 @@ footer.hint{margin-top:36px;text-align:center;color:var(--text-faint);font-size:
 
     var topbar =
       '<div class="topbar"><div class="topbar-inner">' +
+        '<button type="button" class="hamburger-btn" data-action="toggle-menu" title="船運選單">' + iconMenu() + '</button>' +
         '<div class="brand"><div class="brand-mark">' + iconContainer() + '</div>' +
           '<div class="brand-text"><span class="eyebrow">Trucking · Import Cargo</span><span class="brand-title">進口貨況看板</span></div></div>' +
         (showSearch ?
@@ -1207,7 +1342,7 @@ footer.hint{margin-top:36px;text-align:center;color:var(--text-faint);font-size:
     body += '</div>';
 
     var toastHtml = ui.flashMsg ? '<div class="toast">' + esc(ui.flashMsg) + '</div>' : "";
-    return topbar + body + renderPresets() + toastHtml;
+    return renderShipMenu() + topbar + body + renderPresets() + toastHtml;
   }
 
   /* ---------------- focus-preserving render ---------------- */
@@ -1339,6 +1474,22 @@ footer.hint{margin-top:36px;text-align:center;color:var(--text-faint);font-size:
       if (isArmed("dlv:" + dId)) deleteDelivery(sId3, oId3, cId3, dId); else arm("dlv:" + dId);
     } else if (action === "retry-save") {
       retrySave();
+    } else if (action === "toggle-menu") {
+      ui.menuOpen = !ui.menuOpen;
+      render();
+    } else if (action === "close-menu") {
+      ui.menuOpen = false;
+      render();
+    } else if (action === "toggle-month-group") {
+      var monthKey = target.getAttribute("data-month-key");
+      var groupsNow = groupShipsForMenu();
+      var idxNow = groupsNow.findIndex(function(g){ return g.key === monthKey; });
+      var currentlyExpanded = ui.expandedMonths.hasOwnProperty(monthKey) ? !!ui.expandedMonths[monthKey] : (idxNow === 0);
+      ui.expandedMonths[monthKey] = !currentlyExpanded;
+      render();
+    } else if (action === "menu-nav-to-ship") {
+      ui.menuOpen = false;
+      navigateTo("owners", target.getAttribute("data-ship"));
     }
   });
 
@@ -1377,6 +1528,11 @@ footer.hint{margin-top:36px;text-align:center;color:var(--text-faint);font-size:
   });
 
   app.addEventListener("keydown", function(e){
+    if (e.key === "Escape" && ui.menuOpen) {
+      ui.menuOpen = false;
+      render();
+      return;
+    }
     if (e.key !== "Enter") return;
     var t = e.target;
     if (t.matches('input[data-action="rename-ship"], input[data-action="rename-owner"], input[data-action="rename-cargo"], input[data-action="edit-cargo-qty"], input[data-action="edit-cargo-location"], input[data-action="edit-delivery-qty"]')) {
